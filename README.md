@@ -61,6 +61,10 @@ The API runs with `uvicorn backend.main:app`. Stage-owned API routes currently r
 
 After the source rasters and hazard JSON inputs have been acquired and their licenses recorded, run `make check-rasters` and `make check-hazard`. Both commands emit quality reports and exit nonzero while required source files are missing or invalid; they never replace missing evidence with zero-valued measurements.
 
+## Optical pipeline
+
+The optical pipeline expects aligned per-scene arrays and does not claim scene acquisition or validation. Its onset flag uses the earliest selected post-event scene with attributable loss; with only two windows, timing cannot be localized more precisely. Missing scenes return `NO_VALID_OPTICAL_SCENE`; low clear fraction and low spatial support carry a grade cap of C for the downstream grader. Supply the parcel preparation result as each scene's `parcel_stack` so its fractional pixel weights and aligned spectral arrays are used by the optical metrics. Scenes without an explicit water mask or NDWI water evidence are skipped and flagged rather than counted as vegetation loss.
+
 ## Parcel preparation
 
 `pipeline/parcel_prep.py` supersamples pixel/parcel intersections at the configured factor, applies the 5 m interior buffer only to parcels at least 35 m wide, and preserves narrow parcels using squared overlap weights. It also provides effective-pixel reliability, deterministic per-taluka spectral clustering, matched upland-control selection, async persistence of cluster labels and sparse per-pixel weights, and a snapped raster-window reader. Persisted scene observations include the sparse overlap grid and `n_eff_pixels`; parcel rows retain the measured minimum width. No pre-event source rasters are included, so this repository does not claim actual scene dates or populated clusters. When rasters are supplied, pass all available pre-event NDVI observations (late May through mid-July where available) and the last pre-event NDMI to the clustering function; missing scenes are not fabricated.
