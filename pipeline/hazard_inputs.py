@@ -10,6 +10,17 @@ from shapely.geometry import LineString
 
 from pipeline.hazard_extractor import classify_imd_rainfall
 
+PROVENANCE_GAP_FLAGS = {
+    "PROVENANCE_METADATA_INVALID",
+    "SOURCE_MISSING",
+    "SOURCE_IDENTIFIER_MISSING",
+    "RETRIEVAL_DATE_MISSING",
+    "LICENSE_STATUS_MISSING",
+    "LICENSE_STATUS_UNVERIFIED",
+    "LICENSE_REVIEW_STATUS_MISSING",
+    "UNVERIFIED_SOURCE",
+}
+
 
 def _provenance_flags(payload: Mapping[str, Any]) -> list[str]:
     provenance = payload.get("provenance") or {}
@@ -27,8 +38,15 @@ def _provenance_flags(payload: Mapping[str, Any]) -> list[str]:
         flags.append("LICENSE_STATUS_MISSING")
     if payload.get("synthetic"):
         flags.append("SYNTHETIC_INPUT")
-    elif payload.get("provenance_status", "UNVERIFIED") != "VERIFIED":
-        flags.append("UNVERIFIED_SOURCE")
+        if str(provenance.get("license_status", "")).upper() != "GENERATED":
+            flags.append("LICENSE_STATUS_UNVERIFIED")
+    else:
+        if payload.get("provenance_status", "UNVERIFIED") != "VERIFIED":
+            flags.append("UNVERIFIED_SOURCE")
+        if provenance.get("license_review_status") != "APPROVED":
+            flags.append("LICENSE_STATUS_UNVERIFIED")
+        if not provenance.get("license_review_status"):
+            flags.append("LICENSE_REVIEW_STATUS_MISSING")
     return flags
 
 
@@ -59,11 +77,26 @@ def validate_rain_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
             value = cell.get(field)
             if value is None:
                 flags.append(f"{field.upper()}_MISSING")
-            elif not 0 <= float(value) <= 100:
-                errors.append(f"RAIN_CELL_{index}_{field.upper()}_OUT_OF_RANGE")
+            else:
+                try:
+                    numeric_value = float(value)
+                except (TypeError, ValueError):
+                    errors.append(f"RAIN_CELL_{index}_{field.upper()}_INVALID")
+                    continue
+                if not isfinite(numeric_value) or not 0 <= numeric_value <= 100:
+                    errors.append(f"RAIN_CELL_{index}_{field.upper()}_OUT_OF_RANGE")
+    provenance_gaps = bool(PROVENANCE_GAP_FLAGS.intersection(flags))
+    non_synthetic_flags = set(flags) - {"SYNTHETIC_INPUT"}
+    status = (
+        "INVALID" if errors else
+        "UNVERIFIED" if provenance_gaps else
+        "LOW_QUALITY" if non_synthetic_flags else
+        "SYNTHETIC" if payload.get("synthetic") else
+        "VALID"
+    )
     return {
         "kind": "rainfall",
-        "status": "INVALID" if errors else ("LOW_QUALITY" if "RAIN_CLASS_MISMATCH" in flags else "SYNTHETIC" if payload.get("synthetic") else "UNVERIFIED" if "UNVERIFIED_SOURCE" in flags else "VALID"),
+        "status": status,
         "quality_flags": sorted(set(flags + errors)),
         "cell_count": len(cells),
         "source": payload.get("source"),
@@ -99,9 +132,18 @@ def validate_discharge_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
             errors.append("DISCHARGE_REACH_COORDINATES_INVALID")
     except (KeyError, TypeError, ValueError):
         errors.append("DISCHARGE_FIELDS_INVALID")
+    provenance_gaps = bool(PROVENANCE_GAP_FLAGS.intersection(flags))
+    non_synthetic_flags = set(flags) - {"SYNTHETIC_INPUT"}
+    status = (
+        "INVALID" if errors else
+        "UNVERIFIED" if provenance_gaps else
+        "LOW_QUALITY" if non_synthetic_flags else
+        "SYNTHETIC" if payload.get("synthetic") else
+        "VALID"
+    )
     return {
         "kind": "discharge",
-        "status": "INVALID" if errors else ("SYNTHETIC" if payload.get("synthetic") else "UNVERIFIED" if "UNVERIFIED_SOURCE" in flags else "VALID"),
+        "status": status,
         "quality_flags": sorted(set(flags + errors)),
         "source": payload.get("source"),
         "date": payload.get("date"),

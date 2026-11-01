@@ -13,6 +13,34 @@ from rasterio.warp import reproject
 
 CLEAR_SCL_CLASSES = {4, 5, 6, 7}
 VALID_SCL_CLASSES = set(range(12))
+VERIFIED_MANIFEST_STATUSES = {"VERIFIED", "SYNTHETIC"}
+
+
+def _provenance_flags(asset: Mapping[str, Any]) -> list[str]:
+    source = asset.get("source") or {}
+    if not isinstance(source, Mapping):
+        return ["RASTER_PROVENANCE_INVALID"]
+    flags: list[str] = []
+    if not source.get("provider"):
+        flags.append("RASTER_PROVIDER_MISSING")
+    if not source.get("product_id"):
+        flags.append("RASTER_PRODUCT_ID_MISSING")
+    synthetic = bool(asset.get("synthetic", False))
+    expected_license_status = "GENERATED" if synthetic else "APPROVED"
+    if not source.get("license_status"):
+        flags.append("RASTER_LICENSE_STATUS_MISSING")
+    elif str(source["license_status"]).upper() != expected_license_status:
+        flags.append("RASTER_LICENSE_UNVERIFIED")
+    if not source.get("license_or_attribution"):
+        flags.append("RASTER_ATTRIBUTION_MISSING")
+    expected_status = "SYNTHETIC" if synthetic else "VERIFIED"
+    if source.get("provenance_status") != expected_status:
+        flags.append("RASTER_SOURCE_UNVERIFIED")
+    if not asset.get("acquisition_date") and not asset.get("date_not_applicable", False):
+        flags.append("RASTER_ACQUISITION_DATE_MISSING")
+    if not asset.get("nodata_policy"):
+        flags.append("RASTER_NODATA_POLICY_MISSING")
+    return flags
 
 
 def inspect_asset(root: Path, asset: Mapping[str, Any]) -> dict[str, Any]:
@@ -34,6 +62,7 @@ def inspect_asset(root: Path, asset: Mapping[str, Any]) -> dict[str, Any]:
         flags.append("MISSING_RASTER")
         result["status"] = "MISSING"
         return result
+    flags.extend(_provenance_flags(asset))
 
     with rasterio.open(path) as dataset:
         xres, yres = dataset.res
@@ -108,15 +137,24 @@ def report_for_manifest(manifest: Mapping[str, Any], root: Path) -> dict[str, An
             if report.get("metadata"):
                 report["quality_flags"].extend(alignment_flags)
                 report["status"] = "LOW_QUALITY"
+    manifest_status = str(manifest.get("status", "UNSPECIFIED")).upper()
+    manifest_flags = []
+    if not manifest.get("assets"):
+        manifest_flags.append("RASTER_ASSETS_MISSING")
+    if manifest_status not in VERIFIED_MANIFEST_STATUSES:
+        manifest_flags.append("RASTER_MANIFEST_UNVERIFIED")
     has_required_failure = any(
         asset.get("required", True) and report["status"] != "VALID"
         for asset, report in zip(manifest.get("assets", []), reports, strict=True)
     )
+    has_required_failure |= bool(manifest_flags)
+    quality_flags = {flag for report in reports for flag in report["quality_flags"]}
+    quality_flags.update(manifest_flags)
     return {
         "schema_version": 1,
-        "manifest_status": manifest.get("status", "UNSPECIFIED"),
+        "manifest_status": manifest_status,
         "assets": reports,
-        "quality_flags": sorted({flag for report in reports for flag in report["quality_flags"]}),
+        "quality_flags": sorted(quality_flags),
         "ready": not has_required_failure,
     }
 

@@ -7,21 +7,43 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from pipeline.hazard_extractor import RasterLayer, extract_hazard
-from pipeline.hazard_inputs import rain_cells_with_provenance
+from pipeline.hazard_inputs import (
+    rain_cells_with_provenance,
+    validate_discharge_payload,
+    validate_rain_payload,
+)
 
 
 def load_rain_file(path: Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     payload = json.loads(path.read_text(encoding="utf-8"))
-    return rain_cells_with_provenance(payload), {
+    if not isinstance(payload, Mapping):
+        raise ValueError(f"Rainfall input {path} must be a JSON object")
+    validation = validate_rain_payload(payload)
+    if validation["status"] == "INVALID":
+        raise ValueError(f"Invalid rainfall input {path}: {validation['quality_flags']}")
+    cells = rain_cells_with_provenance(payload)
+    for cell in cells:
+        cell["input_status"] = validation["status"]
+        cell["input_quality_flags"] = validation["quality_flags"]
+    return cells, {
         "source": payload.get("source"),
         "synthetic": bool(payload.get("synthetic", False)),
         "provenance_status": payload.get("provenance_status", "UNVERIFIED"),
+        "validation_status": validation["status"],
+        "quality_flags": validation["quality_flags"],
     }
 
 
 def load_discharge_file(path: Path) -> dict[str, Any]:
     payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, Mapping):
+        raise ValueError(f"Discharge input {path} must be a JSON object")
+    validation = validate_discharge_payload(payload)
+    if validation["status"] == "INVALID":
+        raise ValueError(f"Invalid discharge input {path}: {validation['quality_flags']}")
     payload.setdefault("provenance_status", "UNVERIFIED")
+    payload["input_status"] = validation["status"]
+    payload["input_quality_flags"] = validation["quality_flags"]
     return payload
 
 

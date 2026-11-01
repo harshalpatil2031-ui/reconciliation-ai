@@ -291,6 +291,8 @@ def extract_hazard(
         rain_amount = None
         flags.append("RAIN_AMOUNT_INVALID")
     rain_class = None if rain_cell is None else rain_cell.get("imd_class")
+    if rain_cell is not None:
+        flags.extend(rain_cell.get("input_quality_flags", []))
     calculated_class = classify_imd_rainfall(rain_amount)
     if rain_class and calculated_class and rain_class != calculated_class:
         flags.append("RAIN_CLASS_MISMATCH")
@@ -346,6 +348,8 @@ def extract_hazard(
             "distance_to_river_m": distance,
             "in_reach": in_reach,
         }
+    if discharge is not None:
+        flags.extend(discharge.get("input_quality_flags", []))
 
     if rain_cell and rain_cell.get("synthetic"):
         flags.append("SYNTHETIC_RAIN_INPUT")

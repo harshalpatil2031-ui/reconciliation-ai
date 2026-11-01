@@ -9,12 +9,12 @@ Hazard inputs are kept separate from `observed_estimates`; they produce only `ha
   "source": "IMD 0.25 degree / GPM IMERG V07",
   "synthetic": false,
   "provenance_status": "UNVERIFIED",
-  "provenance": {"url": "...", "product_id": "...", "retrieved_at": "YYYY-MM-DD", "license_status": "..."},
+  "provenance": {"url": "...", "product_id": "...", "retrieved_at": "YYYY-MM-DD", "license_status": "exact license/terms", "license_review_status": "PENDING"},
   "cells": [{"lat": 18.50, "lon": 73.85, "max_24h_mm": 118.4, "max_24h_date": "2024-07-25", "imd_class": "VERY_HEAVY", "percentile": 99.2, "antecedent_30d_percentile": 91.0}]
 }
 ```
 
-The nearest grid cell to the parcel centroid is used. The rainfall amount is reclassified by the IMD 24-hour thresholds in the relay, and a supplied class disagreement emits `RAIN_CLASS_MISMATCH`. Classification bands are from the official [IMD heavy-rainfall review](https://internal.imd.gov.in/press_release/20250114_pr_3552.pdf). IMD gridded data availability and requested citation are recorded at the official [IMD Pune gridded rainfall page](https://imdpune.gov.in/cmpg/Griddata/Rainfall_25_NetCDF.html); access and redistribution terms still require review.
+The nearest grid cell to the parcel centroid is used. The rainfall amount is reclassified by the IMD 24-hour thresholds in the relay, and a supplied class disagreement emits `RAIN_CLASS_MISMATCH`. Classification bands are from the official [IMD heavy-rainfall review](https://internal.imd.gov.in/press_release/20250114_pr_3552.pdf). IMD gridded data availability and requested citation are recorded at the official [IMD Pune gridded rainfall page](https://imdpune.gov.in/cmpg/Griddata/Rainfall_25_NetCDF.html); access and redistribution terms still require review. Real inputs cannot pass `make check-hazard` as ready unless provenance is verified and `license_review_status` is `APPROVED`. Synthetic fixtures must set `synthetic: true` and `license_status: "GENERATED"`.
 
 ## Discharge JSON
 
@@ -23,7 +23,7 @@ The nearest grid cell to the parcel centroid is used. The rainfall amount is rec
   "source": "CWC or WRD bulletin identifier",
   "synthetic": false,
   "provenance_status": "UNVERIFIED",
-  "provenance": {"url": "...", "retrieved_at": "YYYY-MM-DD", "license_status": "..."},
+  "provenance": {"url": "...", "product_id": "...", "retrieved_at": "YYYY-MM-DD", "license_status": "exact license/terms", "license_review_status": "PENDING"},
   "release_cusecs": 37500,
   "date": "2024-07-25",
   "reach": [[73.85, 18.48], [73.90, 18.51]],
@@ -31,7 +31,7 @@ The nearest grid cell to the parcel centroid is used. The rainfall amount is rec
 }
 ```
 
-`reach` is an EPSG:4326 coordinate array. Exposure is measured against the nearest valid HAND <= 0.5 m raster cell within the buffered reach. Until an event bulletin URL and reuse terms are recorded, the release stays 🔎 unverified; simulated examples must set `synthetic: true`.
+`reach` is an EPSG:4326 coordinate array. Exposure is measured against the nearest valid HAND <= 0.5 m raster cell within the buffered reach. Until an event bulletin URL/product ID and reuse terms are recorded and approved, the release stays 🔎 unverified and readiness fails; simulated examples must set `synthetic: true` and `license_status: "GENERATED"`.
 
 ## Raster provenance
 
