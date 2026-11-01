@@ -1,9 +1,9 @@
-# Reconciliation AI — Consolidated Issue Backlog (v3 + AI Version)
+# Reconciliation AI — Issue Backlog
 
 **Prepared:** 1 November 2026  
-**Sources reviewed:** `reconciliation_ai_implementation_v3.md`, `Reconciliation_AI_Implementation.md`, and `reconciliation_ai_work_split.md`  
-**Ownership:** Four existing roles (P1–P4) from the work-split document. Names were not present, so roles are preserved rather than guessed.  
-**Purpose:** Convert the design decisions and version differences into actionable, reviewable issues. This is a backlog proposal; no issue tracker was connected, so no external issues were filed.
+**Submission deadline:** 10 November 2026  
+**Ownership:** Four roles — P1 (Data & Satellite), P2 (Ground Evidence & PWA), P3 (Decision Engine & Reports), P4 (Dashboard & Demo).  
+**Purpose:** Actionable issues for the prototype submission. Pilot-phase items (X-04, X-05) are closed — not required before 10 Nov.
 
 ## 1. Executive summary
 
@@ -277,39 +277,27 @@ The biggest shift is architectural: v3 replaces unvalidated predictive claims an
 ### X-02 — Resolve and record cross-document ambiguities
 **Priority:** P1 · **Owner:** P3; P1/P2/P4 review by area  
 **Labels:** `contracts`, `version-reconciliation`, `integration`  
-**Description:** Review relay Section 2.5 decisions and local L1–L4 decisions against v3; record every selected interpretation in contracts/CHANGELOG before implementation.  
-**Acceptance criteria:** All ambiguity IDs have a decision, owner, affected payload/WP, and regression fixture; contradictions are not silently resolved in code.
+**Description:** Review relay Section 2.5 decisions (D-1 through D-22) and the stage-local decision tables (L2-1 through L2-5, L3-1 through L3-5, L4-1 through L4-5) against v3; record every selected interpretation in `contracts/CHANGELOG.md` before implementation. The relay contains no L1 decision table; do not invent L1 IDs.
+**Acceptance criteria:** Every listed decision has an owner, affected payload/WP and linked regression fixture; all four owners acknowledge the baseline; contradictions are not silently resolved in code.
 **Blocked by:** X-01. **Blocks:** P1-01, P3-01, P4-03.
 
 ### X-03 — Audit provenance, privacy and claim tags
 **Priority:** P1 · **Owner:** P2 + P4; P1/P3 support  
 **Labels:** `privacy`, `provenance`, `docs`  
-**Description:** Establish a reusable provenance/claim checklist for external datasets, model weights, images and all numerical statements. Enforce no Aadhaar collection, EXIF removal, pseudonymous logging and real/synthetic/target tags.  
-**Acceptance criteria:** Dataset/license register exists; sample reports and demo slides pass a traceability review; no sensitive identifiers appear in logs or thumbnails.
-**Blocked by:** X-01; P2-05 and P3-05 for complete sample artifacts. **Blocks:** P4-04, X-05.
+**Description:** Establish a provenance/claim checklist for all datasets, model weights, images and numerical statements used in the demo. Enforce no Aadhaar collection, EXIF removal, pseudonymous logging and real/synthetic/target tags.  
+**Acceptance criteria:** Dataset/license register exists; demo slides pass a traceability review; no sensitive identifiers appear in logs or thumbnails.  
+**Blocked by:** X-01; P2-05 and P3-05 for complete sample artifacts. **Blocks:** P4-04.
 
-### X-04 — Complete missing v2/v3 references before pilot
-**Priority:** P2 · **Owner:** P4, with P1/P3 input  
-**Labels:** `docs`, `pilot-readiness`  
-**Description:** Recover/replace the missing referenced sections/appendices and document v3 validation, privacy and build-plan requirements that the relay has only summarized.  
-**Acceptance criteria:** Pilot checklist points to available documents; missing references are either restored or marked explicitly unavailable with an owner and plan.
-**Blocked by:** X-01. **Blocks:** X-05.
+> ~~X-04~~ and ~~X-05~~ **closed** — pilot-phase issues, not required for 10 Nov submission.
 
-### X-05 — Prepare four-week shadow pilot plan
-**Priority:** P3 · **Owner:** P4; week leads P1/P3/P2 respectively  
-**Labels:** `pilot`, `roadmap`, `human-review`  
-**Description:** Turn the roadmap into week-specific deliverables, data access needs, responsible reviewer roles, blind gold-set procedure and shadow-mode safeguards.  
-**Acceptance criteria:** No live payment effect; reason codes and human decisions retained; metrics and fairness are reported with intervals; thresholds change only via documented calibration.
-**Blocked by:** X-03, X-04, P1-06, P2-05, P3-06, P4-03, P4-04.
+## 6. Execution order (submission: 10 Nov 2026)
 
-## 6. Suggested execution order
-
-1. **Source/contract freeze:** X-01 → X-02 → P1-01.
-2. **Stage 1:** P1-02 through P1-06; P3 prepares pure functions/tests and P4 prepares fixture UI/benchmark during allowed wait time.
-3. **Stage 2:** P2-01 through P2-05 after Stage 1 handoff.
-4. **Stage 3:** P3-01 through P3-06 after Stage 2 handoff.
-5. **Stage 4:** P4-01 through P4-04 after Stage 3 handoff.
-6. **Pilot readiness:** X-03 through X-05 as applicable.
+1. **X-01 → X-02 → P1-01** — Freeze contracts first. Nothing else starts until P1-01 is done.
+2. **Stage 1 (P1):** P1-02 → P1-03 → P1-04/P1-05 → P1-06 handoff
+3. **Stage 2 (P2):** P2-01 → P2-02/P2-03/P2-04 → P2-05 handoff
+4. **Stage 3 (P3):** P3-01 → P3-02/P3-03/P3-04/P3-05 → P3-06 handoff
+5. **Stage 4 (P4):** P4-01 → P4-02/P4-03 → P4-04 (demo ready)
+6. **X-03** runs alongside Stage 4 — privacy/provenance audit before demo.
 
 ## 7. Risks and open questions
 
@@ -334,19 +322,19 @@ The biggest shift is architectural: v3 replaces unvalidated predictive claims an
 
 ```text
 X-01 → X-02 → P1-01
-                 ├─→ P1-02 → P1-03 → P1-04 / P1-05 ─┐
-                 └───────────────────────────────────┴→ P1-06 → P2 stage → P2-05
-                                                               ↓
-                                                        P3-01 → P3-02 → P3-03 ─┐
-                                                           ├──→ P3-04 ─────────┤
-                                                           └──→ P3-05 ─────────┴→ P3-06
-                                                                                       ↓
-                                                    P4-01 → P4-02 ─┐                   │
-                                                    P4-03 ─────────┼───────────────────┤
-                                                    X-03 ──────────┘                   ↓
-                                                                       P4-04 → X-05
-X-04 (pilot documentation) ───────────────────────────────────────────────→ X-05
+                 ├─→ P1-02 → P1-03 → P1-04/P1-05 ─┐
+                 └──────────────────────────────────┴→ P1-06
+                                                          ↓
+                                              P2-01 → P2-02/P2-03/P2-04 → P2-05
+                                                                               ↓
+                                                    P3-01 → P3-02/P3-03 ─────┐
+                                                         → P3-04 ────────────┤
+                                                         → P3-05 ────────────┴→ P3-06
+                                                                                    ↓
+                                              X-03 ──→ P4-01 → P4-02/P4-03 → P4-04
 ```
+
+> X-04 and X-05 closed — pilot not required for 10 Nov submission.
 
 This graph is a summary. Each issue's **Blocked by** line is authoritative. Commas mean all listed blockers must be Done/Closed, except explicitly allowed fixture/stub work.
 
