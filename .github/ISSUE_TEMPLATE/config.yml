@@ -1,1 +1,5 @@
-blank_issues_enabled: false
+blank_issues_enabled: true
+contact_links:
+  - name: 📋 Issue Backlog (all 20 issues with blockers)
+    url: https://github.com/PCCOE-Indradhanu/reconciliation-ai/blob/main/reconciliation_ai_v3_ai_issues.md
+    about: Find the full backlog with owner assignments, acceptance criteria, and the dependency graph before creating a new issue.

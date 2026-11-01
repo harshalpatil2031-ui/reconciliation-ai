@@ -1,0 +1,34 @@
+name: Bug report / unexpected behavior
+description: Something is not working as the spec defines
+title: "[BUG] "
+labels: ["bug"]
+body:
+  - type: input
+    id: backlog_ref
+    attributes:
+      label: Related backlog issue (if any)
+      placeholder: "P1-04, X-02, etc."
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior (per spec)
+      description: Cite the relevant section from the implementation doc or v3 spec.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: input
+    id: component
+    attributes:
+      label: Component
+      placeholder: "satellite / ground-evidence / decision-engine / frontend / api / database"
