@@ -42,4 +42,19 @@ Start with X-01, then X-02, then P1-01. Follow the dependency graph and stage ga
 
 ## Repository status
 
-This repository currently contains the specifications and issue-planning materials. The product implementation, live data pipeline, and benchmark outputs are not included yet. Consult the v3 spec’s scope and the relay exit gates before treating any feature as implemented.
+The initial data foundation is now scaffolded: PostgreSQL/PostGIS/pgvector schema, typed shared configuration and contracts, and FastAPI endpoint stubs. Satellite processing, populated demo data, production APIs, and benchmark outputs are not included yet. Consult the v3 spec’s scope and the relay exit gates before treating any feature as implemented.
+
+## Local foundation setup
+
+Requirements: Docker Compose and Python 3.11 or newer.
+
+```sh
+cp .env.example .env
+make up
+make schema
+python -m pip install -r requirements.txt
+make test
+make openapi
+```
+
+The API runs with `uvicorn backend.main:app`. Stage-owned API routes currently return HTTP 501; `/health` reports database availability and the active configuration digest. The database initialization SQL is safe to apply repeatedly with `make schema`.
