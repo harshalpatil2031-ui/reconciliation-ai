@@ -1,0 +1,58 @@
+name: Work item from the v3 backlog
+description: Create an issue linked to a backlog ID and its blockers.
+title: "[P1-01] Short task title"
+labels: ["v3"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Copy the matching issue from `reconciliation_ai_v3_ai_issues.md`. Keep its local ID in the title. Check every blocker before starting.
+  - type: input
+    id: backlog_id
+    attributes:
+      label: Backlog ID
+      description: Example P1-01 or X-01
+      placeholder: P1-01
+    validations:
+      required: true
+  - type: dropdown
+    id: owner
+    attributes:
+      label: Owner
+      options:
+        - P1 — Data Foundation & Satellite Evidence
+        - P2 — Ground Evidence & Farmer PWA
+        - P3 — Decision Engine, Audit & Reports
+        - P4 — Officer Dashboard, Benchmark & Demo
+        - Cross-owner
+    validations:
+      required: true
+  - type: textarea
+    id: blocked_by
+    attributes:
+      label: Blocked by
+      description: List blocker issue IDs and links. Use “None” if there are no blockers.
+      placeholder: "P1-01 (link) — must be Done; Stage 1 handoff snapshot available"
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope and acceptance criteria
+      description: Paste the exact scope and acceptance checks from the backlog.
+    validations:
+      required: true
+  - type: textarea
+    id: handoff
+    attributes:
+      label: Required handoff or artifacts
+      description: What must exist before this work can proceed or be considered complete?
+    validations:
+      required: true
+  - type: checkboxes
+    id: readiness
+    attributes:
+      label: Dependency check
+      options:
+        - label: I checked the live status of every blocker and verified its required handoff artifact.
+          required: true
