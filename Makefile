@@ -4,7 +4,7 @@ DB_NAME ?= reconciliation
 DB_USER ?= reconciliation
 S ?= 1
 
-.PHONY: up down schema counts snapshot restore test openapi
+.PHONY: up down schema counts snapshot restore test openapi check-rasters check-hazard
 
 up:
 	docker compose up --build -d --wait
@@ -35,3 +35,9 @@ test:
 
 openapi:
 	python scripts/export_openapi.py
+
+check-rasters:
+	python scripts/check_rasters.py
+
+check-hazard:
+	python scripts/check_hazard_inputs.py

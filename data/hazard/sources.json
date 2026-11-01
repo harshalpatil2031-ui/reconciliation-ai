@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "status": "UNVERIFIED",
+  "event_period": {"start": "2024-07-24", "end": "2024-07-26"},
+  "sources": [
+    {
+      "id": "imd_daily_gridded_rainfall_025",
+      "provider": "India Meteorological Department, Climate Research and Services, Pune",
+      "product": "Daily gridded rainfall, 0.25 x 0.25 degree, selected annual file for 2024",
+      "url": "https://imdpune.gov.in/cmpg/Griddata/Rainfall_25_NetCDF.html",
+      "date_range": {"start": "2024-07-24", "end": "2024-07-26"},
+      "status": "🔎 not downloaded; DSP access/redistribution terms and exact file citation to confirm",
+      "license_or_attribution": "IMD page requests citation to Pai et al. (2014); confirm data-service terms before redistribution",
+      "fields": ["max_24h_mm", "max_24h_date", "imd_class", "percentile", "antecedent_30d_percentile"]
+    },
+    {
+      "id": "nasa_gpm_imerg_v07",
+      "provider": "NASA GES DISC",
+      "product": "GPM IMERG Final Precipitation L3 daily 0.1 degree x 0.1 degree V07",
+      "url": "https://disc.gsfc.nasa.gov/datasets/GPM_3IMERGDF_07/summary",
+      "date_range": {"start": "2024-07-24", "end": "2024-07-26"},
+      "status": "🔎 fallback/secondary cross-check; Earthdata account and collection granule IDs not recorded",
+      "license_or_attribution": "Use NASA dataset citation and check NASA Earthdata data-use terms before redistribution",
+      "fields": ["daily_precipitation", "antecedent_30d_total"]
+    },
+    {
+      "id": "copernicus_dem_glo30",
+      "provider": "Copernicus Data Space Ecosystem / Copernicus Contributing Missions",
+      "product": "Copernicus DEM GLO-30 DSM",
+      "url": "https://dataspace.copernicus.eu/explore-data/data-collections/copernicus-contributing-missions/collections-description/COP-DEM",
+      "date_range": null,
+      "status": "🔎 candidate; tile IDs and account/access confirmation pending",
+      "license_or_attribution": "Record and retain the required Copernicus WorldDEM attribution with any adapted/redistributed products",
+      "fields": ["HAND_m", "TWI"]
+    },
+    {
+      "id": "cwc_wrd_event_discharge",
+      "provider": "Central Water Commission / Maharashtra Water Resources Department",
+      "product": "Khadakwasla release bulletin/gauge record and affected reach for 2024-07-25",
+      "url": null,
+      "date_range": {"start": "2024-07-25", "end": "2024-07-25"},
+      "status": "🔎 source document, station/structure ID and reuse terms not recorded",
+      "license_or_attribution": "Record bulletin URL/identifier, retrieval date and reuse terms before treating the value as verified",
+      "fields": ["release_cusecs", "date", "reach", "reach_buffer_m"]
+    }
+  ]
+}

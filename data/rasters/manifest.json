@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "status": "UNVERIFIED",
+  "event_id": "MH-2024-07-PUNE",
+  "target_grid": {
+    "crs": "EPSG:32643",
+    "resolution_m": 10,
+    "alignment": "All six core scenes must share transform, width, and height"
+  },
+  "assets": [
+    {
+      "id": "s2_20240718_pre",
+      "path": "data/rasters/s2_20240718_pre.tif",
+      "sensor": "Sentinel-2 L2A",
+      "acquisition_date": "2024-07-18",
+      "expected": {"crs": "EPSG:32643", "resolution_m": 10, "band_count": 8, "scl_band": 8, "min_clear_fraction": 0.4},
+      "source": {"provider": "Copernicus Data Space Ecosystem", "product_id": null, "url": "https://dataspace.copernicus.eu/data-collections/copernicus-sentinel-missions/sentinel-2", "license_status": "REVIEW_ACCESSION_AND_ATTRIBUTION"},
+      "synthetic": false,
+      "required": true,
+      "status": "MISSING",
+      "nodata_policy": "Record source nodata and preserve as GeoTIFF nodata/mask"
+    },
+    {
+      "id": "s2_20240803_post1",
+      "path": "data/rasters/s2_20240803_post1.tif",
+      "sensor": "Sentinel-2 L2A",
+      "acquisition_date": "2024-08-03",
+      "expected": {"crs": "EPSG:32643", "resolution_m": 10, "band_count": 8, "scl_band": 8, "min_clear_fraction": 0.4},
+      "source": {"provider": "Copernicus Data Space Ecosystem", "product_id": null, "url": "https://dataspace.copernicus.eu/data-collections/copernicus-sentinel-missions/sentinel-2", "license_status": "REVIEW_ACCESSION_AND_ATTRIBUTION"},
+      "synthetic": false,
+      "required": true,
+      "status": "MISSING",
+      "nodata_policy": "Record source nodata and preserve as GeoTIFF nodata/mask"
+    },
+    {
+      "id": "s2_20240813_post2",
+      "path": "data/rasters/s2_20240813_post2.tif",
+      "sensor": "Sentinel-2 L2A",
+      "acquisition_date": "2024-08-13",
+      "expected": {"crs": "EPSG:32643", "resolution_m": 10, "band_count": 8, "scl_band": 8, "min_clear_fraction": 0.4},
+      "source": {"provider": "Copernicus Data Space Ecosystem", "product_id": null, "url": "https://dataspace.copernicus.eu/data-collections/copernicus-sentinel-missions/sentinel-2", "license_status": "REVIEW_ACCESSION_AND_ATTRIBUTION"},
+      "synthetic": false,
+      "required": true,
+      "status": "MISSING",
+      "nodata_policy": "Record source nodata and preserve as GeoTIFF nodata/mask"
+    },
+    {
+      "id": "s1_20240715_pre_vv_vh",
+      "path": "data/rasters/s1_20240715_pre_vv_vh.tif",
+      "sensor": "Sentinel-1A GRD",
+      "acquisition_date": "2024-07-15",
+      "expected": {"crs": "EPSG:32643", "resolution_m": 10, "band_count": 2},
+      "source": {"provider": "Copernicus Data Space Ecosystem", "product_id": null, "url": "https://dataspace.copernicus.eu/data-collections/copernicus-sentinel-missions/sentinel-1", "license_status": "REVIEW_ACCESSION_AND_ATTRIBUTION"},
+      "synthetic": false,
+      "required": true,
+      "status": "MISSING",
+      "nodata_policy": "Record source nodata and preserve as GeoTIFF nodata/mask"
+    },
+    {
+      "id": "s1_20240727_peak_vv_vh",
+      "path": "data/rasters/s1_20240727_peak_vv_vh.tif",
+      "sensor": "Sentinel-1A GRD",
+      "acquisition_date": "2024-07-27",
+      "expected": {"crs": "EPSG:32643", "resolution_m": 10, "band_count": 2},
+      "source": {"provider": "Copernicus Data Space Ecosystem", "product_id": null, "url": "https://dataspace.copernicus.eu/data-collections/copernicus-sentinel-missions/sentinel-1", "license_status": "REVIEW_ACCESSION_AND_ATTRIBUTION"},
+      "synthetic": false,
+      "required": true,
+      "status": "MISSING",
+      "nodata_policy": "Record source nodata and preserve as GeoTIFF nodata/mask"
+    },
+    {
+      "id": "terrain_hand_twi_32643",
+      "path": "data/rasters/terrain_hand_twi_32643.tif",
+      "sensor": "HAND/TWI derived from Copernicus DEM GLO-30 or documented fallback",
+      "acquisition_date": null,
+      "expected": {"crs": "EPSG:32643", "resolution_m": 10, "band_count": 2},
+      "source": {"provider": "Copernicus Data Space Ecosystem", "product_id": null, "url": "https://dataspace.copernicus.eu/explore-data/data-collections/copernicus-contributing-missions/collections-description/COP-DEM", "license_status": "RECORD_TILE_IDS_AND_REQUIRED_ATTRIBUTION"},
+      "synthetic": false,
+      "required": true,
+      "status": "MISSING",
+      "nodata_policy": "HAND/TWI nodata must be explicit; no NaN permitted inside the AOI"
+    }
+  ]
+}
