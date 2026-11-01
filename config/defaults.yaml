@@ -1,0 +1,97 @@
+parcel:
+  min_width_for_buffer_m: 35.0
+  adaptive_buffer_m: 5.0
+  min_overlap_weight_large: 0.65      # D-21
+  min_overlap_weight_strip: 0.50      # D-21
+  min_eff_pixels: 8.0
+  high_reliability_eff_pixels: 25.0
+  supersample: 5
+peers:
+  radius_km: 15.0
+  sowing_window_days: 10
+  observed_similarity: 0.15
+  min_peers: 8
+  max_candidates: 60
+  min_external_assessor_frac: 0.50
+controls:
+  radius_km: [10.0, 25.0]
+  min_controls: 5
+  min_hand_m: 8.0                     # upland = well above the river
+  max_sar_water_frac: 0.02
+satellite:
+  window1_days: [1, 10]               # D-9
+  window2_days: [11, 20]              # D-9
+  min_clear_fraction: 0.40
+  bare_ndvi_default: 0.12
+  denom_floor: 0.05
+  damaged_area_pixel_threshold: 0.35
+  standing_water_ndwi: 0.05
+  silt_ndre_rebound_threshold: 0.12
+  silt_w1_loss_min: 0.35
+  silt_w2_loss_max: 0.25
+  rot_w1_loss_max: 0.20
+  rot_w2_loss_min: 0.35
+  rot_ndmi_drop: 0.15
+  bootstrap_block: 3
+  bootstrap_n: 2000
+  sigma_floor: 0.05
+  interval_percentiles: [10, 90]
+  onset_threshold: 0.15
+  onset_window_days: [-2, 14]
+sar:
+  lee_window: 3
+  ashman_d_min: 2.0
+  open_water_vv_drop_db: -2.5
+  open_water_vh_max_db: -20.0
+  fallback_vv_drop_db: -3.0
+  double_bounce_hand_max_m: 4.0
+  double_bounce_ndvi_pre_min: 0.35
+  double_bounce_ctrl_excess_db: 2.5
+hazard:                               # D-15
+  heavy_rain_mm: 64.5
+  discharge_hand_pctile_max: 25.0
+  low_plausibility_hand_pctile_min: 50.0
+ground:
+  sigma_tier1_verified: 0.14
+  sigma_tier2_partial: 0.22
+  sigma_tier3_unverified: 0.35
+  photo_max_boundary_dist_m: 15.0
+  photo_max_accuracy_m: 25.0
+  frustum_range_m: 60.0
+  frustum_half_angle_deg: 25.0
+  frustum_min_overlap: 0.40
+  pitch_min_deg: 65.0
+  pitch_max_deg: 88.0
+  min_angle_sep_deg: 35.0
+  min_pos_sep_m: 15.0
+  pgvector_dup_cosine_threshold: 0.92
+  moire_max: 6.5
+  parallax_ratio_min: 0.08
+  fg_motion_range_px: [0.2, 45.0]
+official:
+  rounding_tolerance: 0.05
+pooling:
+  conflict_k: 2.0
+  interval_z: 1.28
+detectors:
+  gap_note: 0.10
+  gap_review: 0.20
+  gap_priority: 0.25
+  peer_z_note: 1.5
+  peer_z_flag: 2.0
+  mad_scale_floor: 0.05
+  cluster_min_cases: 5
+  cluster_max_iqr: 0.05
+  cluster_min_gap: 0.20
+  timing_rho: -0.40
+  timing_p: 0.05
+  timing_hand_band_m: 2.5
+  timing_min_cohort: 10
+  timing_radius_km: 25.0
+  boundary: 0.33
+grade:                                # D-14
+  a_min: 8
+  b_min: 6
+  c_min: 4
+report:
+  llm_polish_enabled: false           # templates are the default; LLM text is optional

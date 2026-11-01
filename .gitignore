@@ -33,3 +33,12 @@ coverage/
 .DS_Store
 Thumbs.db
 desktop.ini
+# Local environment and generated runtime artifacts
+.env
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.venv/
+*.py[cod]
+*.dump
+handoffs/*/*.dump
