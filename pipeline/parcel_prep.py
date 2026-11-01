@@ -139,11 +139,10 @@ def assign_spectral_clusters(
         scales = matrix.std(axis=0)
         scales[scales < 1e-12] = 1.0
         standardized = (matrix - means) / scales
-        k = min(6, len(ids))
-        if k == len(ids):
-            assigned = np.arange(len(ids))
-        else:
-            assigned = KMeans(n_clusters=k, random_state=42, n_init=10).fit_predict(standardized)
+        # Keep cohorts large enough to contain peers. Using k == len(ids)
+        # assigns every parcel its own label and makes spectral matching useless.
+        k = min(6, max(1, len(ids) // 2))
+        assigned = KMeans(n_clusters=k, random_state=42, n_init=10).fit_predict(standardized)
         labels.update({pid: int(label) for pid, label in zip(ids, assigned, strict=True)})
     return labels
 
@@ -266,10 +265,13 @@ def select_controls(
                 or abs((candidate_sown - source_sown).days) > 10
             ):
                 continue
-        is_control = candidate.get("role") == "control"
-        is_upland = (float(hand_by_parcel.get(candidate_id, -math.inf)) >= min_hand
-                     and float(sar_water_frac_by_parcel.get(candidate_id, math.inf)) <= max_water)
-        if not (is_control or is_upland):
+        # Explicitly tagged controls must still pass the same upland and
+        # non-flooded checks as automatically discovered control candidates.
+        is_upland = (
+            float(hand_by_parcel.get(candidate_id, -math.inf)) >= min_hand
+            and float(sar_water_frac_by_parcel.get(candidate_id, math.inf)) <= max_water
+        )
+        if not is_upland:
             continue
         distance = _distance_km(parcel_row, candidate)
         if math.isfinite(distance):

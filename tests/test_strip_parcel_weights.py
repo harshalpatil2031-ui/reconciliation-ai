@@ -64,7 +64,8 @@ def test_control_selection_matches_crop_date_and_widens_radius() -> None:
         for i, day in enumerate([1, 2, 3, 4, 5])
     ]
     selected = select_controls(
-        target, [target, *candidates], {}, {},
+        target, [target, *candidates], {f"c{i}": 0.0 for i in range(5)},
+        {f"c{i}": 10.0 for i in range(5)},
         {"controls": {"radius_km": [10, 25], "min_controls": 5,
                        "min_hand_m": 8, "max_sar_water_frac": 0.02}},
     )
