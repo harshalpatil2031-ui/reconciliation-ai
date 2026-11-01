@@ -42,7 +42,7 @@ Start with X-01, then X-02, then P1-01. Follow the dependency graph and stage ga
 
 ## Repository status
 
-The initial data foundation is now scaffolded: PostgreSQL/PostGIS/pgvector schema, typed shared configuration and contracts, FastAPI endpoint stubs, raster quality/alignment helpers, and hazard-context extraction. Satellite source files, authorized rainfall/discharge inputs, populated demo data, production APIs, and benchmark outputs are not included yet. Consult the v3 spec’s scope and the relay exit gates before treating any feature as implemented.
+The initial data foundation is now scaffolded: PostgreSQL/PostGIS/pgvector schema, typed shared configuration and contracts, FastAPI endpoint stubs, raster quality/alignment helpers, hazard-context extraction, and the v3 optical loss functions. Satellite source files, authorized rainfall/discharge inputs, populated demo data, production APIs, and benchmark outputs are not included yet. Consult the v3 spec’s scope and the relay exit gates before treating any feature as implemented.
 
 ## Local foundation setup
 
@@ -60,3 +60,5 @@ make openapi
 The API runs with `uvicorn backend.main:app`. Stage-owned API routes currently return HTTP 501; `/health` reports database availability and the active configuration digest. The database initialization SQL is safe to apply repeatedly with `make schema`.
 
 After the source rasters and hazard JSON inputs have been acquired and their licenses recorded, run `make check-rasters` and `make check-hazard`. Both commands emit quality reports and exit nonzero while required source files are missing or invalid; they never replace missing evidence with zero-valued measurements.
+
+The optical pipeline expects aligned per-scene arrays and does not claim scene acquisition or validation. Its onset flag uses the earliest selected post-event scene with attributable loss; with only two windows, timing cannot be localized more precisely. Missing scenes return `NO_VALID_OPTICAL_SCENE`; low clear fraction and low spatial support carry a grade cap of C for the downstream grader.
