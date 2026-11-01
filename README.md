@@ -42,7 +42,7 @@ Start with X-01, then X-02, then P1-01. Follow the dependency graph and stage ga
 
 ## Repository status
 
-The initial data foundation is now scaffolded: PostgreSQL/PostGIS/pgvector schema, typed shared configuration and contracts, FastAPI endpoint stubs, raster quality/alignment helpers, hazard-context extraction, and the v3 optical loss functions. Satellite source files, authorized rainfall/discharge inputs, populated demo data, production APIs, and benchmark outputs are not included yet. Consult the v3 spec’s scope and the relay exit gates before treating any feature as implemented.
+The initial data foundation is now scaffolded: PostgreSQL/PostGIS/pgvector schema, typed shared configuration and contracts, FastAPI endpoint stubs, raster quality/alignment helpers, and hazard-context extraction. Satellite source files, authorized rainfall/discharge inputs, populated demo data, production APIs, and benchmark outputs are not included yet. Consult the v3 spec’s scope and the relay exit gates before treating any feature as implemented.
 
 ## Local foundation setup
 
