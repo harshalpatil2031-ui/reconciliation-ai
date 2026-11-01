@@ -349,6 +349,22 @@ def _prepare_scene(
     parcel_row: Mapping[str, Any],
 ) -> dict[str, Any]:
     prepared = dict(scene)
+    parcel_stack = prepared.pop("parcel_stack", None)
+    if parcel_stack is not None:
+        if not isinstance(parcel_stack, Mapping) or "weights" not in parcel_stack:
+            raise ValueError("parcel_stack must be a parcel_prep pixel stack with weights")
+        stack_weights = np.asarray(parcel_stack["weights"], dtype=float)
+        if "weights" in prepared and not np.array_equal(
+            np.asarray(prepared["weights"], dtype=float), stack_weights
+        ):
+            raise ValueError("scene weights conflict with parcel_stack weights")
+        prepared["weights"] = stack_weights
+        prepared.setdefault("transform", parcel_stack.get("transform"))
+        stack_arrays = parcel_stack.get("arrays")
+        if "bands" not in prepared and isinstance(stack_arrays, Mapping):
+            required_bands = {"B03", "B04", "B05", "B08", "B8A", "B11"}
+            if required_bands.issubset(stack_arrays):
+                prepared["bands"] = stack_arrays
     if "ndvi_exp" not in prepared and "ndvi_pre" in prepared:
         prepared["ndvi_exp"] = prepared["ndvi_pre"]
     if "bands" in prepared:
@@ -357,14 +373,18 @@ def _prepare_scene(
         prepared.setdefault("ndre_obs", indices["NDRE"])
         prepared.setdefault("ndmi_obs", indices["NDMI"])
         prepared.setdefault("ndwi_obs", indices["NDWI"])
-    if window_id == 1 and "water" not in prepared and "ndwi_obs" in prepared:
+    water_status_available = "water" in prepared or "ndwi_obs" in prepared
+    if "water" not in prepared and "ndwi_obs" in prepared:
         prepared["water"] = np.asarray(prepared["ndwi_obs"], dtype=float) > float(
             cfg.get("standing_water_ndwi", 0.05)
         )
-    elif window_id != 1:
-        prepared["water"] = np.zeros_like(prepared["weights"], dtype=bool)
+    elif "water" not in prepared:
+        # Without a water mask, do not turn potentially submerged pixels into
+        # apparent vegetation loss. The caller will skip this scene and cap
+        # the evidence grade if no water-observable scene is available.
+        prepared["water"] = np.ones_like(prepared["weights"], dtype=bool)
+    prepared["water_status_available"] = water_status_available
     if mode == "v2":
-        prepared["water"] = np.zeros_like(prepared["weights"], dtype=bool)
         if "weights_v2" in prepared:
             prepared["weights"] = prepared["weights_v2"]
         elif parcel_row.get("geom_utm") is not None and prepared.get("transform") is not None:
@@ -451,6 +471,7 @@ def compute_parcel_satellite(
     candidate_scenes = sorted(rasters, key=_date_key)
     window_ranges = {1: (1, 10), 2: (11, 20)}
     selected: dict[int, tuple[Mapping[str, Any], dict[str, Any]]] = {}
+    water_status_unavailable = False
     controls_map = controls_deficits if isinstance(controls_deficits, Mapping) else {}
     flat_controls = [] if isinstance(controls_deficits, Mapping) else controls_deficits
     if mode == "v2":
@@ -467,11 +488,15 @@ def compute_parcel_satellite(
         }
     for window_id, candidates in candidates_by_window.items():
         evaluated: list[tuple[float, Mapping[str, Any], dict[str, Any]]] = []
+        missing_water_status = False
         for scene in candidates:
             scene_controls = controls_map.get(
                 str(scene["date"]), scene.get("controls", flat_controls)
             )
             scene_data = _prepare_scene(scene, window_id, cfg, mode, parcel_row)
+            if not scene_data["water_status_available"]:
+                missing_water_status = True
+                continue
             metrics = parcel_window_metrics(scene_data, scene_controls, mode=mode, cfg=cfg)
             if metrics is not None:
                 evaluated.append((float(metrics["clear_frac"]), scene_data, metrics))
@@ -481,11 +506,15 @@ def compute_parcel_satellite(
                 key=lambda value: (value[0], str(value[1].get("scene_id", ""))),
             )
             selected[window_id] = (scene, metrics)
+        elif missing_water_status:
+            water_status_unavailable = True
 
     if not selected:
         flags = ["NO_VALID_OPTICAL_SCENE"]
         if candidate_scenes:
             flags.append("LOW_CLEAR_FRACTION")
+        if water_status_unavailable:
+            flags.append("WATER_STATUS_UNAVAILABLE")
         return SatelliteResult(
             [],
             None,
@@ -503,6 +532,8 @@ def compute_parcel_satellite(
         used_window = 2
     final_scene, final_metrics = selected[used_window]
     flags: list[str] = []
+    if water_status_unavailable:
+        flags.append("WATER_STATUS_UNAVAILABLE")
     if final_metrics["n_eff"] < 8:
         flags.append("SMALL_PARCEL_LIMITATION")
     if final_metrics["clear_frac"] < clear_min:
@@ -628,6 +659,7 @@ def compute_parcel_satellite(
             mode == "v3"
             and len(selected) > 1
             and all(metrics["clear_frac"] >= clear_min for _, metrics in selected.values())
+            and not water_status_unavailable
         ),
         "controls_n": len(control_values),
         "controls_deficit_median": final_metrics["deficit_controls"],
@@ -641,7 +673,7 @@ def compute_parcel_satellite(
         "mode": mode,
         "pixel_grid": pixel_grid,
         "grade_cap": "C"
-        if {"LOW_CLEAR_FRACTION", "SMALL_PARCEL_LIMITATION"} & set(flags)
+        if {"LOW_CLEAR_FRACTION", "SMALL_PARCEL_LIMITATION", "WATER_STATUS_UNAVAILABLE"} & set(flags)
         else None,
     }
     estimate = {
@@ -667,7 +699,7 @@ def compute_parcel_satellite(
             "quality_flags": sorted(set(flags)),
             "grade_cap": (
                 "C"
-                if {"LOW_CLEAR_FRACTION", "SMALL_PARCEL_LIMITATION"} & set(flags)
+                if {"LOW_CLEAR_FRACTION", "SMALL_PARCEL_LIMITATION", "WATER_STATUS_UNAVAILABLE"} & set(flags)
                 else None
             ),
             "flags_assessable": quality["flags_assessable"],
