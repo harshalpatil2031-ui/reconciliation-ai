@@ -60,3 +60,7 @@ make openapi
 The API runs with `uvicorn backend.main:app`. Stage-owned API routes currently return HTTP 501; `/health` reports database availability and the active configuration digest. The database initialization SQL is safe to apply repeatedly with `make schema`.
 
 After the source rasters and hazard JSON inputs have been acquired and their licenses recorded, run `make check-rasters` and `make check-hazard`. Both commands emit quality reports and exit nonzero while required source files are missing or invalid; they never replace missing evidence with zero-valued measurements.
+
+## Parcel preparation
+
+`pipeline/parcel_prep.py` supersamples pixel/parcel intersections at the configured factor, applies the 5 m interior buffer only to parcels at least 35 m wide, and preserves narrow parcels using squared overlap weights. It also provides effective-pixel reliability, deterministic per-taluka spectral clustering, matched upland-control selection, async persistence of cluster labels and sparse per-pixel weights, and a snapped raster-window reader. Persisted scene observations include the sparse overlap grid and `n_eff_pixels`; parcel rows retain the measured minimum width. No pre-event source rasters are included, so this repository does not claim actual scene dates or populated clusters. When rasters are supplied, pass all available pre-event NDVI observations (late May through mid-July where available) and the last pre-event NDMI to the clustering function; missing scenes are not fabricated.

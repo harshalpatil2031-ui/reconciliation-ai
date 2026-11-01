@@ -57,6 +57,7 @@ CREATE TABLE IF NOT EXISTS scene_observations (
   scene_date       DATE NOT NULL,
   clear_frac       NUMERIC(4,3),
   n_eff_pixels     NUMERIC(7,2),
+  pixel_weights    JSONB,
   ndvi_obs         NUMERIC(5,4),
   ndvi_exp         NUMERIC(5,4),
   ndvi_bare        NUMERIC(5,4),
@@ -70,6 +71,7 @@ CREATE TABLE IF NOT EXISTS scene_observations (
   water_frac       NUMERIC(4,3),
   PRIMARY KEY (case_id, sensor, scene_date)
 );
+ALTER TABLE scene_observations ADD COLUMN IF NOT EXISTS pixel_weights JSONB;
 
 CREATE TABLE IF NOT EXISTS observed_estimates (
   case_id   UUID NOT NULL REFERENCES cases(case_id) ON DELETE CASCADE,
