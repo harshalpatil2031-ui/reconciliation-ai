@@ -1,4 +1,7 @@
 # 🌾 Reconciliation AI – Maharashtra Flood Compensation
+
+> **Historical prototype proposal — superseded by `reconciliation_ai_implementation_v3.md` and `reconciliation_ai_work_split.md`.** This document is retained for comparison only. Do not use its proposed model stack, weighted score, confidence percentages, or unverified performance figures as the current implementation plan. See the repository README for the source-of-truth rule.
+
 ## Technical Implementation Document — Prototype Round
 
 > **Stage:** Round 2 — Prototype  

@@ -1,73 +1,42 @@
-# 🌾 Reconciliation AI — Maharashtra Flood Compensation QA
+# Reconciliation AI — Maharashtra Flood Compensation QA
 
-> **Team:** PCCOE Indradhanu · **Stage:** Prototype Round 2 → 24-Hour Hackathon  
-> **Domain:** AI for Social Good · Disaster Management · AgriTech
+An evidence-led, human-reviewed quality-assurance system for reconciling crop-loss assessments with satellite and verified ground evidence. It helps officers prioritize review; it does not approve or deny compensation.
 
-An evidence-led, human-reviewed quality-assurance system for reconciling crop-loss compensation assessments with satellite imagery, rainfall data, and verified ground evidence from farmers.
+## Source of truth
 
-> ⚠️ **The system is advisory only.** It helps officers prioritize review. It does not approve or deny compensation.
+Use **`reconciliation_ai_implementation_v3.md`** for the current technical design and **`reconciliation_ai_work_split.md`** for the four-person ownership, work packages, shared contracts, dependency decisions, handoffs, and exit gates. Read both before implementing a feature. If they conflict, resolve the ambiguity through the relay decision register and record the result in its contract change log; do not silently choose an interpretation.
 
----
+The v3 spec references companion v2 validation/build-plan material and a detailed implementation plan that are not currently present in this repository. Track recovery or replacement of those references under **X-04** before pilot planning.
 
-## 📂 Repository Structure
+**`IMPLEMENTATION.md` is the historical prototype proposal.** Its Siamese CNN, weighted evidence score, IndicBERT severity model, Random Forest/SHAP, numeric confidence score, and LLM report proposal are superseded where they conflict with v3. Do not present its unverified metrics as current results.
 
-```
-reconciliation-ai/
-├── IMPLEMENTATION.md     ← Full technical spec (ML models, APIs, architecture)
-├── ISSUES.md             ← All 26 backlog issues with owners, blockers, acceptance criteria
-├── README.md             ← This file
-└── .github/
-    └── ISSUE_TEMPLATE/   ← GitHub issue templates
-```
+## Project documents
 
----
-
-## 📋 Key Documents
-
-| File | What it contains |
+| File | Purpose |
 |---|---|
-| [`IMPLEMENTATION.md`](IMPLEMENTATION.md) | Tech stack, ML model architectures, data sources, API design, dashboard spec, end-to-end example |
-| [`ISSUES.md`](ISSUES.md) | All 26 backlog issues (X-01→X-05, P1-01→P1-06, P2-01→P2-05, P3-01→P3-06, P4-01→P4-04) with blockers and dependency graph |
+| [`reconciliation_ai_implementation_v3.md`](reconciliation_ai_implementation_v3.md) | Current technical specification: evidence model, data/schema, satellite and ground methods, detectors, grading, reports, API, and dashboard. |
+| [`reconciliation_ai_work_split.md`](reconciliation_ai_work_split.md) | Four-person relay plan: P1–P4 roles, contracts, work packages, decision register, handoffs, blockers, and exit gates. |
+| [`ISSUES.md`](ISSUES.md) | Tracker-ready backlog with owners, acceptance criteria, blockers, dependency graph, and AI-agent blocker-check procedure. |
+| [`contracts/CHANGELOG.md`](contracts/CHANGELOG.md) | Baseline register for relay decisions D-1 through D-22 and a template for future contract changes. |
+| [`IMPLEMENTATION.md`](IMPLEMENTATION.md) | Historical prototype AI proposal, retained for comparison only. |
+| `.github/ISSUE_TEMPLATE/` | GitHub issue templates, including required blocker fields. |
 
----
+The four roles are called P1–P4 because the source work-split document does not contain team members’ names. Map them to actual GitHub assignees while preserving the role responsibilities.
 
-## 🏗️ Tech Stack
+## Issue workflow and dependencies
 
-| Layer | Technology |
-|---|---|
-| **Frontend** | React.js 18 + Vite · Leaflet.js · Recharts |
-| **Backend** | FastAPI (Python) |
-| **Database** | PostgreSQL 15 + PostGIS 3.4 |
-| **ML — Satellite** | PyTorch Siamese CNN · Sentinel-2 NDVI/NDWI · Sentinel-1 SAR |
-| **ML — NLP** | IndicBERT fine-tuned for Marathi/Hindi |
-| **ML — Photo** | torchvision ResNet-50 |
-| **ML — Root Cause** | scikit-learn Random Forest + SHAP |
-| **Report Generation** | Gemini 1.5 Flash (free tier) |
+Keep each backlog ID (for example, `P1-01` or `X-01`) in the GitHub issue title. Link every **Blocked by** item using GitHub’s native dependency relationship where available. Before starting an issue, the assignee or AI agent must check the live status and required handoff artifacts for every blocker. If a blocker is not Done/Closed, report its ID, status, owner, and missing handoff; only isolated fixture/stub work explicitly permitted by the relay may proceed. Do not close a dependent issue until its blockers and acceptance criteria are satisfied.
 
----
+Start with X-01, then X-02, then P1-01. Follow the dependency graph and stage gates in `ISSUES.md`; its per-issue **Blocked by** fields are authoritative.
 
-## 🚀 Implementation Order
+## Version and evidence rules
 
-```
-X-01 → X-02 → P1-01           ← Freeze contracts first
-P1-02 → P1-03 → P1-04/05 → P1-06    ← Stage 1: Data + Satellite (P1)
-P2-01 → P2-02/03/04 → P2-05         ← Stage 2: Ground Evidence (P2)
-P3-01 → P3-02/03/04/05 → P3-06      ← Stage 3: Decision Engine (P3)
-P4-01 → P4-02/03 → P4-04            ← Stage 4: Dashboard + Demo (P4)
-```
+- Observed damage and hazard plausibility remain separate; hazard context does not enter the numerical damage estimate.
+- A human officer makes the compensation decision.
+- Tag claims and numbers as verified, unverified, synthetic, initial/untuned, or roadmap according to the v3 status legend.
+- Do not describe synthetic benchmark results as real-world performance.
+- Do not collect Aadhaar.
 
-> Start at [Issues #1](https://github.com/harshalpatil2031-ui/reconciliation-ai/issues/1). Everything is blocked by X-01.
+## Repository status
 
----
-
-## ⚖️ Hard Constraints
-
-- ❌ Cannot write to government assessment database
-- ❌ Cannot communicate compensation outcomes to farmers  
-- ✅ Every prediction has a mandatory confidence/evidence grade
-- ✅ Immutable audit log for all AI decisions
-- ✅ No Aadhaar collected · EXIF stripped · AES-256 on bank details
-
----
-
-*PCCOE Indradhanu · Reconciliation AI · November 2026*
+This repository currently contains the specifications and issue-planning materials. The product implementation, live data pipeline, and benchmark outputs are not included yet. Consult the v3 spec’s scope and the relay exit gates before treating any feature as implemented.

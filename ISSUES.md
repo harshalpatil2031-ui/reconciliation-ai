@@ -277,8 +277,8 @@ The biggest shift is architectural: v3 replaces unvalidated predictive claims an
 ### X-02 — Resolve and record cross-document ambiguities
 **Priority:** P1 · **Owner:** P3; P1/P2/P4 review by area  
 **Labels:** `contracts`, `version-reconciliation`, `integration`  
-**Description:** Review relay Section 2.5 decisions and local L1–L4 decisions against v3; record every selected interpretation in contracts/CHANGELOG before implementation.  
-**Acceptance criteria:** All ambiguity IDs have a decision, owner, affected payload/WP, and regression fixture; contradictions are not silently resolved in code.
+**Description:** Review relay Section 2.5 decisions (D-1 through D-22) and the stage-local decision tables (L2-1 through L2-5, L3-1 through L3-5, L4-1 through L4-5) against v3; record every selected interpretation in `contracts/CHANGELOG.md` before implementation. The relay contains no L1 decision table; do not invent L1 IDs.
+**Acceptance criteria:** Every listed decision has an owner, affected payload/WP and linked regression fixture; all four owners acknowledge the baseline; contradictions are not silently resolved in code.
 **Blocked by:** X-01. **Blocks:** P1-01, P3-01, P4-03.
 
 ### X-03 — Audit provenance, privacy and claim tags
