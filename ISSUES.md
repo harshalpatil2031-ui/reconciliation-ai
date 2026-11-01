@@ -287,6 +287,7 @@ The biggest shift is architectural: v3 replaces unvalidated predictive claims an
 **Description:** Establish a reusable provenance/claim checklist for external datasets, model weights, images and all numerical statements. Enforce no Aadhaar collection, EXIF removal, pseudonymous logging and real/synthetic/target tags.  
 **Acceptance criteria:** Dataset/license register exists; sample reports and demo slides pass a traceability review; no sensitive identifiers appear in logs or thumbnails.
 **Blocked by:** X-01; P2-05 and P3-05 for complete sample artifacts. **Blocks:** P4-04, X-05.
+**Working document:** `DATA_PROVENANCE.md` (starter register; source/license review is still pending).
 
 ### X-04 — Complete missing v2/v3 references before pilot
 **Priority:** P2 · **Owner:** P4, with P1/P3 input  
@@ -294,6 +295,7 @@ The biggest shift is architectural: v3 replaces unvalidated predictive claims an
 **Description:** Recover/replace the missing referenced sections/appendices and document v3 validation, privacy and build-plan requirements that the relay has only summarized.  
 **Acceptance criteria:** Pilot checklist points to available documents; missing references are either restored or marked explicitly unavailable with an owner and plan.
 **Blocked by:** X-01. **Blocks:** X-05.
+**Working document:** `docs/REFERENCE_GAPS.md`.
 
 ### X-05 — Prepare four-week shadow pilot plan
 **Priority:** P3 · **Owner:** P4; week leads P1/P3/P2 respectively  
@@ -301,6 +303,7 @@ The biggest shift is architectural: v3 replaces unvalidated predictive claims an
 **Description:** Turn the roadmap into week-specific deliverables, data access needs, responsible reviewer roles, blind gold-set procedure and shadow-mode safeguards.  
 **Acceptance criteria:** No live payment effect; reason codes and human decisions retained; metrics and fairness are reported with intervals; thresholds change only via documented calibration.
 **Blocked by:** X-03, X-04, P1-06, P2-05, P3-06, P4-03, P4-04.
+**Working document:** `PILOT_READINESS.md` (draft only; blocker and approval gates remain open).
 
 ## 6. Suggested execution order
 

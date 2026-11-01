@@ -18,6 +18,9 @@ The v3 spec references companion v2 validation/build-plan material and a detaile
 | [`reconciliation_ai_work_split.md`](reconciliation_ai_work_split.md) | Four-person relay plan: P1–P4 roles, contracts, work packages, decision register, handoffs, blockers, and exit gates. |
 | [`ISSUES.md`](ISSUES.md) | Tracker-ready backlog with owners, acceptance criteria, blockers, dependency graph, and AI-agent blocker-check procedure. |
 | [`contracts/CHANGELOG.md`](contracts/CHANGELOG.md) | Baseline register for relay decisions D-1 through D-22 and a template for future contract changes. |
+| [`DATA_PROVENANCE.md`](DATA_PROVENANCE.md) | Starter register for data, model, photo and claim provenance; entries still require source/license review. |
+| [`docs/REFERENCE_GAPS.md`](docs/REFERENCE_GAPS.md) | Missing v2/detailed-plan references and the owner/action needed to close each gap. |
+| [`PILOT_READINESS.md`](PILOT_READINESS.md) | Draft four-week shadow-pilot plan; prerequisites and approvals are still pending. |
 | [`IMPLEMENTATION.md`](IMPLEMENTATION.md) | Historical prototype AI proposal, retained for comparison only. |
 | `.github/ISSUE_TEMPLATE/` | GitHub issue templates, including required blocker fields. |
 
