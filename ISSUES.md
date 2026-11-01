@@ -3,7 +3,7 @@
 **Prepared:** 1 November 2026  
 **Submission deadline:** 10 November 2026  
 **Ownership:** Four roles — P1 (Data & Satellite), P2 (Ground Evidence & PWA), P3 (Decision Engine & Reports), P4 (Dashboard & Demo).  
-**Purpose:** Actionable issues for the prototype submission. Pilot-phase items (X-04, X-05) are closed — not required before 10 Nov.
+**Purpose:** Actionable implementation issues for the 10 November 2026 prototype submission, organized around the four-person P1–P4 implementation work.
 
 ## 1. Executive summary
 
@@ -32,8 +32,7 @@ The biggest shift is architectural: v3 replaces unvalidated predictive claims an
 2. **Do not revive the Siamese CNN, Random Forest/SHAP, IndicBERT severity model, or weighted evidence formula** unless a separately approved, labeled-data evaluation justifies a future change.
 3. **Do not report older model metrics as current performance.** The v3 rule is measured numbers only, with synthetic versus real origin stated.
 4. **Keep system output advisory.** The officer remains the decision maker; the tool must not approve or reject compensation.
-5. **Check document references before pilot.** The v3 file references v2 sections and appendices not present in the folder; the relay risk register calls this out.
-6. **Reconcile detailed-plan ambiguities only through the relay’s global decision register (D-1 onward)** and record any new choice in the contract change log.
+5. **Use the relay’s global decision register (D-1 onward)** and record any new implementation contract change in the contract change log.
 
 ## 3. Issue conventions and ownership
 
@@ -56,7 +55,7 @@ The biggest shift is architectural: v3 replaces unvalidated predictive claims an
 - Required enums and cross-stage payloads match the relay contracts.
 - API stubs return documented shapes.
 - Any clarification is recorded in the contract change log before downstream consumers depend on it.
-**Blocked by:** X-01, X-02. **Blocks:** P1-02, P1-03, P1-04, P1-05, P2-01, P2-04, P3-01, P4-01.
+**Blocked by:** None. **Blocks:** P1-02, P1-03, P1-04, P1-05, P2-01, P2-04, P3-01, P4-01.
 
 ### P1-02 — Build reproducible raster and hazard inputs
 **Priority:** P1 · **Labels:** `v3`, `satellite`, `hazard`  
@@ -202,7 +201,7 @@ The biggest shift is architectural: v3 replaces unvalidated predictive claims an
 - Repeated analysis/review does not duplicate case outputs.
 - Tampering is detected and concurrent writes preserve chain ordering.
 - Audit entries avoid Aadhaar and mask farmer/officer identifiers as designed.
-- **Blocked by:** P1-01, X-03.
+- **Blocked by:** P1-01.
 
 ### P3-05 — Produce bilingual template reports with robust numeric verification
 **Priority:** P1 · **Labels:** `v3`, `reports`, `localization`  
@@ -253,7 +252,7 @@ The biggest shift is architectural: v3 replaces unvalidated predictive claims an
 - Results tag synthetic data 🧪, show uncertainty intervals and state what they do not establish.
 - Comparison isolates changed components and records excluded/future ablations.
 - No old AI accuracy claim is copied into project materials as a current result.
-- **Blocked by:** P1-06, P3-06, X-01, X-02.
+- **Blocked by:** P1-06, P3-06.
 
 ### P4-04 — Deliver offline-ready demo, attribution and handoff
 **Priority:** P1 · **Labels:** `v3`, `demo`, `docs`, `handoff`  
@@ -263,51 +262,23 @@ The biggest shift is architectural: v3 replaces unvalidated predictive claims an
 - All presented numbers trace to tagged results or verified sources.
 - Q&A accurately states limits, synthetic inputs, human-in-loop and privacy safeguards.
 - Exit Gate 4 checklist and final known-limitations/not-implemented list are complete.
-- **Blocked by:** P3-06, P4-01, P4-02, P4-03, X-03.
+- **Blocked by:** P3-06, P4-01, P4-02, P4-03.
 
-## 5. Cross-owner issues
+## 5. Execution order (submission: 10 Nov 2026)
 
-### X-01 — Freeze source-of-truth and archive legacy AI claims
-**Priority:** P0 · **Owner:** P3 (decision engine) + P4 (docs); all owners review  
-**Labels:** `version-reconciliation`, `docs`, `governance`  
-**Description:** Mark the v3 spec and relay plan as current implementation sources. Add a short deprecation note to the old AI document (or an index/README if editing that historical artifact is undesirable) that identifies superseded modules and forbids carrying its unvalidated performance claims into demo material.  
-**Acceptance criteria:** One authoritative source statement exists; older model/score proposals are explicitly historical; no contradictory claim remains in implementation-facing docs.
-**Blocked by:** None. **Blocks:** X-02, P4-03, X-03.
+1. **P1 foundation:** P1-01, then P1-02 and P1-03; implement P1-04/P1-05 after their inputs are ready; finish with P1-06 and the Stage 1 handoff.
+2. **P2 ground evidence:** Start integration after the Stage 1 handoff. Complete P2-01, then P2-02/P2-03/P2-04, and finish with P2-05 and the Stage 2 handoff.
+3. **P3 decision engine:** Start integration after the Stage 2 handoff. Complete P3-01, then P3-02/P3-03/P3-04/P3-05, and finish with P3-06 and the Stage 3 handoff.
+4. **P4 dashboard and demo:** Build API/UI work from fixtures while waiting where allowed; integrate after the Stage 3 handoff. Complete P4-01, P4-02/P4-03, then P4-04.
 
-### X-02 — Resolve and record cross-document ambiguities
-**Priority:** P1 · **Owner:** P3; P1/P2/P4 review by area  
-**Labels:** `contracts`, `version-reconciliation`, `integration`  
-**Description:** Review relay Section 2.5 decisions (D-1 through D-22) and the stage-local decision tables (L2-1 through L2-5, L3-1 through L3-5, L4-1 through L4-5) against v3; record every selected interpretation in `contracts/CHANGELOG.md` before implementation. The relay contains no L1 decision table; do not invent L1 IDs.
-**Acceptance criteria:** Every listed decision has an owner, affected payload/WP and linked regression fixture; all four owners acknowledge the baseline; contradictions are not silently resolved in code.
-**Blocked by:** X-01. **Blocks:** P1-01, P3-01, P4-03.
+## 6. Risks and open questions
 
-### X-03 — Audit provenance, privacy and claim tags
-**Priority:** P1 · **Owner:** P2 + P4; P1/P3 support  
-**Labels:** `privacy`, `provenance`, `docs`  
-**Description:** Establish a provenance/claim checklist for all datasets, model weights, images and numerical statements used in the demo. Enforce no Aadhaar collection, EXIF removal, pseudonymous logging and real/synthetic/target tags.  
-**Acceptance criteria:** Dataset/license register exists; demo slides pass a traceability review; no sensitive identifiers appear in logs or thumbnails.  
-**Blocked by:** X-01; P2-05 and P3-05 for complete sample artifacts. **Blocks:** P4-04.
-
-> ~~X-04~~ and ~~X-05~~ **closed** — pilot-phase issues, not required for 10 Nov submission.
-
-## 6. Execution order (submission: 10 Nov 2026)
-
-1. **X-01 → X-02 → P1-01** — Freeze contracts first. Nothing else starts until P1-01 is done.
-2. **Stage 1 (P1):** P1-02 → P1-03 → P1-04/P1-05 → P1-06 handoff
-3. **Stage 2 (P2):** P2-01 → P2-02/P2-03/P2-04 → P2-05 handoff
-4. **Stage 3 (P3):** P3-01 → P3-02/P3-03/P3-04/P3-05 → P3-06 handoff
-5. **Stage 4 (P4):** P4-01 → P4-02/P4-03 → P4-04 (demo ready)
-6. **X-03** runs alongside Stage 4 — privacy/provenance audit before demo.
-
-## 7. Risks and open questions
-
-- Actual names for P1–P4 are not included in the inspected work-split file; role assignment is therefore used.
-- The project workspace does not contain a connected issue tracker or code repository implementation to receive these issues. This file contains proposed, tracker-ready issue text; filing externally would require a tracker connection and project selection.
-- Confirm whether the detailed implementation plan referenced by the work split exists elsewhere; the listed workspace contains the three reviewed files only.
+- Actual names for P1–P4 are not provided in the work-split file; map the role labels to the four GitHub assignees.
+- The detailed implementation plan referenced by the work split may not be present; follow the relay WPs and record any unresolved specification gap before implementation depends on it.
 - Thresholds marked 🎯 remain calibration settings, not validated performance claims.
 - The older AI document includes proposed metrics/models and formulas that conflict with v3; treat them as retired unless specifically re-evaluated.
 
-## 8. Source mapping
+## 7. Source mapping
 
 - **v3 spec:** D1–D16; §§4–10; database schema; modules for parcels, optical/SAR, hazard context, ground verification, pooling, detectors, factors, grades, reports, APIs and dashboard.
 - **AI version:** modules 1–5, weighted aggregation, random-forest root cause, confidence scoring, LLM report proposal, ethics and deferred scope.
@@ -316,25 +287,22 @@ The biggest shift is architectural: v3 replaces unvalidated predictive claims an
 ---
 *Issue descriptions are ready to copy into an issue tracker; IDs here are local backlog IDs and do not imply issues were created externally.*
 
-## 9. Dependency graph and tracker behavior
+## 8. Dependency graph and tracker behavior
 
 ### Critical path
 
 ```text
-X-01 → X-02 → P1-01
-                 ├─→ P1-02 → P1-03 → P1-04/P1-05 ─┐
-                 └──────────────────────────────────┴→ P1-06
-                                                          ↓
-                                              P2-01 → P2-02/P2-03/P2-04 → P2-05
-                                                                               ↓
-                                                    P3-01 → P3-02/P3-03 ─────┐
-                                                         → P3-04 ────────────┤
-                                                         → P3-05 ────────────┴→ P3-06
-                                                                                    ↓
-                                              X-03 ──→ P4-01 → P4-02/P4-03 → P4-04
+P1-01 → P1-02 → P1-03 ─┬→ P1-04 ─┐
+                        └→ P1-05 ─┴→ P1-06 (Stage 1 handoff)
+  └→ P2-04 stub work may proceed while P1 is active
+P1-06 → P2-01 → P2-02 / P2-03 ─┐
+P1-06 + P1-01 → P2-04 ──────────┴→ P2-05 (Stage 2 handoff)
+P1-06 + P2-05 → P3-01 → P3-02 ─┐
+                                 ├→ P3-03 / P3-05 → P3-06 (Stage 3 handoff)
+P1-01 → P3-04 ──────────────────┘
+P3-06 → P4-01 → P4-02 ─┐
+P1-06 + P3-06 → P4-03 ──┴→ P4-04
 ```
-
-> X-04 and X-05 closed — pilot not required for 10 Nov submission.
 
 This graph is a summary. Each issue's **Blocked by** line is authoritative. Commas mean all listed blockers must be Done/Closed, except explicitly allowed fixture/stub work.
 
@@ -348,4 +316,4 @@ For every issue, the assigned person or AI agent should:
 4. Continue only work explicitly marked as fixture/stub or waiting-time work in the relay. Keep it isolated and label the issue partially blocked.
 5. When blockers close, verify the promised contract, handoff or artifact exists before proceeding; closing a ticket alone is insufficient if its acceptance criteria are unmet.
 
-When imported into a tracker, map each **Blocked by** ID to a native “is blocked by” link. Keep local IDs in titles/descriptions so an AI coding agent can resolve dependencies even when tracker links are unavailable. This backlog does not claim live status; check the tracker when work is attempted.
+In the issue tracker, map each **Blocked by** ID to a native “is blocked by” link. Keep local IDs in titles/descriptions so an AI coding agent can resolve dependencies even when tracker links are unavailable. Check live status when work is picked up.
