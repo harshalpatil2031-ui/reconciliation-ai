@@ -3,8 +3,11 @@ DB_SERVICE := db
 DB_NAME ?= reconciliation
 DB_USER ?= reconciliation
 S ?= 1
+HAND_RASTER ?= data/rasters/terrain_hand_twi_32643.tif
+RASTER_MANIFEST ?= data/rasters/manifest.json
+MEASURED_CASES ?= benchmark/measured_cases.json
 
-.PHONY: up down schema counts snapshot restore test openapi check-rasters check-hazard
+.PHONY: up down schema counts snapshot restore test openapi check-rasters check-hazard seed-sql plant-anomalies
 
 up:
 	docker compose up --build -d --wait
@@ -41,3 +44,9 @@ check-rasters:
 
 check-hazard:
 	python scripts/check_hazard_inputs.py
+
+seed-sql:
+	python scripts/generate_seed.py --hand "$(HAND_RASTER)" --manifest "$(RASTER_MANIFEST)"
+
+plant-anomalies:
+	python scripts/plant_anomalies.py "$(MEASURED_CASES)"
