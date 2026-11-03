@@ -69,9 +69,11 @@ CREATE TABLE IF NOT EXISTS scene_observations (
   area_dmg_frac    NUMERIC(4,3),
   sar_change_db    NUMERIC(6,3),
   water_frac       NUMERIC(4,3),
+  quality          JSONB NOT NULL DEFAULT '{}'::jsonb,
   PRIMARY KEY (case_id, sensor, scene_date)
 );
 ALTER TABLE scene_observations ADD COLUMN IF NOT EXISTS pixel_weights JSONB;
+ALTER TABLE scene_observations ADD COLUMN IF NOT EXISTS quality JSONB NOT NULL DEFAULT '{}'::jsonb;
 
 CREATE TABLE IF NOT EXISTS observed_estimates (
   case_id   UUID NOT NULL REFERENCES cases(case_id) ON DELETE CASCADE,
