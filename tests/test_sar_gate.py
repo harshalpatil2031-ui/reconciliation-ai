@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 from datetime import date
 import json
 
@@ -39,7 +38,9 @@ def test_lee_filter_handles_nan_and_preserves_raster_shape() -> None:
 def test_small_unimodal_flood_fraction_uses_fixed_fallback_not_otsu() -> None:
     rng = np.random.default_rng(42)
     window = rng.normal(-0.2, 0.45, size=(50, 50))
-    assert ashman_d(window, -0.2) < 2.0
+    # Ashman's D after a one-threshold split can be high even for one Gaussian
+    # mode, so the histogram peak/valley check must reject Otsu here.
+    assert ashman_d(window, -0.2) > 2.0
     delta = np.zeros((10, 10))
     delta.flat[:3] = -5.0
     result = sar_water_fraction(
@@ -47,6 +48,7 @@ def test_small_unimodal_flood_fraction_uses_fixed_fallback_not_otsu() -> None:
     )
     quality = result["quality"]
     assert quality["threshold_method"] == "FIXED_FALLBACK"
+    assert quality["histogram_peak_count"] < 2
     assert quality["open_water_threshold_db"] == -3.0
     assert "SAR_UNIMODAL_FALLBACK" in quality["flags"]
 
@@ -59,6 +61,8 @@ def test_bimodal_neighborhood_enables_otsu_gated_open_water() -> None:
     )
     quality = result["quality"]
     assert quality["ashman_d"] > 2.0
+    assert quality["histogram_peak_count"] >= 2
+    assert quality["histogram_valley_ratio"] <= 0.80
     assert quality["threshold_method"] == "ASHMAN_GATED_OTSU"
     assert result["quality"]["open_water_frac"] > 0.35
     assert result["water_frac"] == pytest.approx(result["quality"]["open_water_frac"])
@@ -91,7 +95,7 @@ def test_sar_inputs_require_aligned_arrays() -> None:
         )
 
 
-def test_sar_result_and_quality_are_persisted() -> None:
+async def test_sar_result_and_quality_are_persisted() -> None:
     class Connection:
         def __init__(self) -> None:
             self.call = None
@@ -106,12 +110,12 @@ def test_sar_result_and_quality_are_persisted() -> None:
         "quality": {"threshold_method": "FIXED_FALLBACK", "flags": ["SAR_UNIMODAL_FALLBACK"]},
     }
     connection = Connection()
-    asyncio.run(persist_sar_observation(
+    await persist_sar_observation(
         connection,
         case_id="00000000-0000-0000-0000-000000000001",
         scene_date=date(2024, 8, 3),
         result=result,
-    ))
+    )
     assert connection.call is not None
     assert "sensor = 'S1_SAR'" in connection.call[0]
     assert connection.call[1][0:2] == (-1.2, 0.25)

@@ -1,7 +1,7 @@
 """Gated Sentinel-1 inundation evidence with traceable quality diagnostics.
 
 Thresholds in ``config/defaults.yaml`` are initial settings and need regional
-calibration. A bimodal Otsu threshold is never used without Ashman's-D gating.
+calibration. Otsu is used only after histogram bimodality and Ashman's-D gates.
 """
 
 from __future__ import annotations
@@ -13,7 +13,8 @@ from typing import Any
 from uuid import UUID
 
 import numpy as np
-from scipy.ndimage import uniform_filter
+from scipy.ndimage import gaussian_filter1d, uniform_filter
+from scipy.signal import find_peaks
 
 
 def _sar_settings(cfg: Any = None) -> dict[str, float]:
@@ -126,6 +127,43 @@ def _otsu_threshold(values: np.ndarray) -> float:
     return float(centers[int(np.argmax(between))])
 
 
+def _histogram_bimodality(values: np.ndarray) -> tuple[bool, int, float | None]:
+    """Require two prominent histogram peaks separated by a clear valley.
+
+    Ashman's D calculated after an Otsu split can exceed 2 for a single
+    Gaussian mode, so it cannot by itself establish bimodality. Smooth the
+    histogram to suppress sampling noise, then require two prominent modes
+    with a valley no higher than 80% of the smaller peak.
+    """
+    data = np.asarray(values, dtype=float)
+    data = data[np.isfinite(data)]
+    if data.size < 50:
+        return False, 0, None
+    low, high = float(data.min()), float(data.max())
+    span = high - low
+    if span <= 0:
+        return False, 0, None
+    padding = span * 0.05
+    histogram, _ = np.histogram(data, bins=128, range=(low - padding, high + padding))
+    smoothed = gaussian_filter1d(histogram.astype(float), sigma=2.0)
+    peaks, _ = find_peaks(
+        smoothed,
+        distance=3,
+        prominence=max(float(smoothed.max()) * 0.05, 1.0),
+    )
+    if peaks.size < 2:
+        return False, int(peaks.size), None
+    dominant = sorted(
+        (int(peak) for peak in peaks),
+        key=lambda peak: smoothed[peak],
+        reverse=True,
+    )[:2]
+    left, right = sorted(dominant)
+    smaller_peak = min(float(smoothed[left]), float(smoothed[right]))
+    valley_ratio = float(np.min(smoothed[left : right + 1]) / smaller_peak)
+    return valley_ratio <= 0.80, int(peaks.size), valley_ratio
+
+
 def ashman_d(vals: np.ndarray, thresh: float) -> float:
     """Return Ashman's D after splitting values at ``thresh``."""
     values = np.asarray(vals, dtype=float)
@@ -189,14 +227,18 @@ def sar_water_fraction(
     flags: list[str] = []
     otsu_threshold = None
     d_value = 0.0
+    bimodal = False
+    peak_count = 0
+    valley_ratio = None
     minimum = float(settings["ashman_d_min"])
     if neighborhood.size >= 50:
         otsu_threshold = _otsu_threshold(neighborhood)
         d_value = ashman_d(neighborhood, otsu_threshold)
+        bimodal, peak_count, valley_ratio = _histogram_bimodality(neighborhood)
     else:
         flags.append("SAR_WINDOW_TOO_SMALL")
 
-    if otsu_threshold is not None and d_value > minimum:
+    if otsu_threshold is not None and bimodal and d_value > minimum:
         drop_threshold = min(otsu_threshold, float(settings["open_water_vv_drop_db"]))
         threshold_method = "ASHMAN_GATED_OTSU"
     else:
@@ -246,6 +288,10 @@ def sar_water_fraction(
             "open_water_frac": open_fraction,
             "double_bounce_frac": bounce_fraction,
             "ashman_d": round(float(d_value), 4),
+            "histogram_peak_count": peak_count,
+            "histogram_valley_ratio": (
+                round(valley_ratio, 4) if valley_ratio is not None else None
+            ),
             "otsu_threshold_db": (
                 round(float(otsu_threshold), 4) if otsu_threshold is not None else None
             ),
