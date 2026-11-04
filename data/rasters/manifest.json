@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
   "status": "UNVERIFIED",
+  "search": {"retrieved": "2026-11-04", "aoi_lonlat": [73.81, 18.32, 74.19, 18.68], "catalogues": ["Copernicus Data Space Ecosystem OData", "Element84 Earth Search STAC"], "results": "The originally planned S2 dates 2024-07-18, 2024-08-03 and 2024-08-13 were not verified as acquisitions over the AOI. Nearby S2 L2A products on 2024-08-04, 2024-08-14 and 2024-08-16 report 100%, 86.54% and 64.97% scene cloud cover respectively. Broader 1 June through 1 September search found one AOI S1 GRD item (S1A, descending relative orbit 136, 2024-08-23), with no matching pre-event/peak pair. Its public STAC assets are in a Requester Pays bucket; Copernicus product access requires authenticated download, and no credentials are configured here. No Sentinel product was substituted."},
   "event_id": "MH-2024-07-PUNE",
   "target_grid": {
     "crs": "EPSG:32643",
@@ -71,15 +72,16 @@
     {
       "id": "terrain_hand_twi_32643",
       "path": "data/rasters/terrain_hand_twi_32643.tif",
-      "sensor": "HAND/TWI derived from Copernicus DEM GLO-30 or documented fallback",
+      "sensor": "HAND/TWI derived from Copernicus DEM GLO-30 DSM",
       "acquisition_date": null,
       "date_not_applicable": true,
       "expected": {"crs": "EPSG:32643", "resolution_m": 10, "band_count": 2},
-      "source": {"provider": "Copernicus Data Space Ecosystem", "product_id": null, "url": "https://dataspace.copernicus.eu/explore-data/data-collections/copernicus-contributing-missions/collections-description/COP-DEM", "provenance_status": "UNVERIFIED", "license_status": "PENDING", "license_or_attribution": null},
+      "source": {"provider": "Copernicus DEM GLO-30 Public S3 bucket", "product_id": "Copernicus_DSM_COG_10_N18_00_E073_00_DEM; Copernicus_DSM_COG_10_N18_00_E074_00_DEM", "url": "https://copernicus-dem-30m.s3.amazonaws.com/", "provenance_status": "VERIFIED", "license_status": "APPROVED", "license_or_attribution": "produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved"},
       "synthetic": false,
       "required": true,
-      "status": "MISSING",
-      "nodata_policy": "HAND/TWI nodata must be explicit; no NaN permitted inside the AOI"
+      "status": "VERIFIED",
+      "nodata_policy": "GeoTIFF nodata=-9999; no missing cells in output grid; D8 no-flow cells are nearest-neighbor filled and counted in raster tags",
+      "derivation": {"script": "scripts/derive_terrain.py", "source_resolution_m": 30, "output_resolution_m": 10, "aoi_lonlat": [73.81, 18.32, 74.19, 18.68], "stream_initiation_area_km2": 3.0, "flow_routing": "D8", "hydrology_library": "pysheds 0.5", "twi_formula": "ln(((upstream_cells+1)*30m)/max(tan(slope),0.001))", "source_sha256": {"Copernicus_DSM_COG_10_N18_00_E073_00_DEM.tif": "e5e127b1a1b56c0415276707bbb8c4e7bb357cf0976030a19f8d166cd9d590c9", "Copernicus_DSM_COG_10_N18_00_E074_00_DEM.tif": "1a44c053a6ef9e06fc522c532bde90b29c0039b45290b8974021497902d1136e"}, "output_sha256": "ff71939a957762c4bd74a852e67850115ac128647ef4adb502e9350091b50559"}
     }
   ]
 }

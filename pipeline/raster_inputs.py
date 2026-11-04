@@ -170,6 +170,11 @@ def align_to_reference(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with rasterio.open(source_path) as source, rasterio.open(reference_path) as reference:
         profile = source.profile.copy()
+        # A striped source can advertise small block sizes (for example, an
+        # 8-row strip). Those are invalid when switching the output to tiled
+        # GeoTIFF, whose tile dimensions must be multiples of 16.
+        profile.pop("blockxsize", None)
+        profile.pop("blockysize", None)
         profile.update(
             driver="GTiff",
             crs=reference.crs,
