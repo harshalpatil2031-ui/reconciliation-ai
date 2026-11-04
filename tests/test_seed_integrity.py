@@ -35,7 +35,9 @@ def test_seed_generator_is_deterministic_and_matches_parcel_counts() -> None:
         for j in range(i + 1, len(geometries))
     )
     assert all(row["hand_m"] >= 8 for row in controls)
-    assert "ON CONFLICT (event_id, parcel_id) DO NOTHING" in render_seed_sql(first)
+    seed_sql = render_seed_sql(first)
+    assert "ON CONFLICT (parcel_id) DO UPDATE SET" in seed_sql
+    assert "ON CONFLICT (event_id, parcel_id) DO UPDATE SET" in seed_sql
 
 
 def _measured_cases() -> list[dict]:

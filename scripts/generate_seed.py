@@ -233,7 +233,9 @@ def render_seed_sql(parcels: list[dict]) -> str:
         f"({_sql_text(EVENT_ID)}, 'Pune July 2024 synthetic benchmark', "
         "'2024-07-24', '2024-07-25', '2024-07-26', "
         "'Synthetic parcels and claims on real imagery; not field validation') ",
-        "ON CONFLICT (event_id) DO NOTHING;",
+        "ON CONFLICT (event_id) DO UPDATE SET name = EXCLUDED.name, "
+        "start_date = EXCLUDED.start_date, peak_date = EXCLUDED.peak_date, "
+        "end_date = EXCLUDED.end_date, notes = EXCLUDED.notes;",
     ]
     for item in parcels:
         geom_utm = item["geometry"].wkt
@@ -249,14 +251,22 @@ def render_seed_sql(parcels: list[dict]) -> str:
             f"ST_GeomFromText({_sql_text(geom_wgs)}, 4326), "
             f"ST_GeomFromText({_sql_text(geom_utm)}, 32643), {crop}, {sowing}, "
             f"{_sql_text(item['soil_class'])}, TRUE, {_sql_text(item['role'])}) "
-            "ON CONFLICT (parcel_id) DO NOTHING;"
+            "ON CONFLICT (parcel_id) DO UPDATE SET "
+            "survey_no = EXCLUDED.survey_no, village = EXCLUDED.village, "
+            "taluka = EXCLUDED.taluka, district = EXCLUDED.district, "
+            "area_ha = EXCLUDED.area_ha, min_width_m = EXCLUDED.min_width_m, "
+            "geom = EXCLUDED.geom, geom_utm = EXCLUDED.geom_utm, "
+            "crop = EXCLUDED.crop, sowing_date = EXCLUDED.sowing_date, "
+            "soil_class = EXCLUDED.soil_class, is_synthetic = EXCLUDED.is_synthetic, "
+            "role = EXCLUDED.role;"
         )
         if item["case_id"]:
             farmer = f"FRM-{int(item['survey_no'].split('-')[-1]):06d}"
             lines.append(
                 "INSERT INTO cases (case_id, event_id, parcel_id, farmer_ref) VALUES "
                 f"('{item['case_id']}', {_sql_text(EVENT_ID)}, '{item['parcel_id']}', "
-                f"{_sql_text(farmer)}) ON CONFLICT (event_id, parcel_id) DO NOTHING;"
+                f"{_sql_text(farmer)}) ON CONFLICT (event_id, parcel_id) "
+                "DO UPDATE SET case_id = EXCLUDED.case_id, farmer_ref = EXCLUDED.farmer_ref;"
             )
     lines.extend(["COMMIT;", ""])
     return "\n".join(lines)
