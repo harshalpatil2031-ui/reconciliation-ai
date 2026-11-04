@@ -16,7 +16,7 @@
 | Revenue/Agriculture panchnama records | Official assessment reference | Requires MoU | No real records committed; use clearly labeled simulated records until authorized data access exists | P1 — record MoU/data steward |
 | IMD gridded rainfall; NASA GPM IMERG V07 | Rainfall hazard context | ✅ sources identified in v3 | No data files committed; capture dataset version, time/space coverage, citation, and terms | P1 — add ingestion manifest |
 | CWC flood portal; GUARDIAN gauges; WRD bulletins | River/discharge context | ✅ sources identified in v3 | No source extracts committed; record exact bulletin/gauge URLs or identifiers, retrieval date, units, and reuse terms | P1 — cite each event observation |
-| Copernicus GLO-30 / FABDEM / CartoDEM; SRTM fallback | Terrain, HAND/TWI derivation | 🔎 source selection requires confirmation | No DEM committed; identify selected product, version, resolution, license, and transformations | P1 — select and document one source |
+| Copernicus DEM GLO-30 Public | Terrain, HAND/TWI derivation | ✅ source selected and acquired | Two source tile hashes, redistribution attribution, AOI, and derivation are recorded in `data/rasters/SCENES.md` and `data/rasters/manifest.json`; source is a ~30 m DSM resampled to 10 m; drainage threshold is initial/untuned | P1 — calibrate threshold against authoritative local hydrography and align Sentinel scenes |
 
 ## Models, photos and generated data
 

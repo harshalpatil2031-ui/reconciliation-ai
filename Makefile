@@ -9,7 +9,7 @@ MEASURED_CASES ?= benchmark/measured_cases.json
 STAGE1_INPUT ?= benchmark/stage1_pixels.json
 RASTER_QUALITY_REPORT ?= data/rasters/quality_report.json
 
-.PHONY: up down schema counts snapshot restore test openapi check-rasters check-hazard seed-sql plant-anomalies batch stage1-handoff
+.PHONY: up down schema counts snapshot restore test openapi check-rasters check-hazard derive-terrain seed-sql plant-anomalies batch stage1-handoff
 
 up:
 	docker compose up --build -d --wait
@@ -46,6 +46,9 @@ check-rasters:
 
 check-hazard:
 	python scripts/check_hazard_inputs.py
+
+derive-terrain:
+	python scripts/derive_terrain.py data/raw/terrain/cop_dem_glo30_n18_e073.tif data/raw/terrain/cop_dem_glo30_n18_e074.tif --output "$(HAND_RASTER)"
 
 seed-sql:
 	python scripts/generate_seed.py --hand "$(HAND_RASTER)" --manifest "$(RASTER_MANIFEST)"

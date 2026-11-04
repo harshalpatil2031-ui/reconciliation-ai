@@ -19,6 +19,7 @@ dependencies = [
   "pyproj>=3.6,<4",
   "shapely>=2.0,<3",
   "affine>=2.4,<3",
+  "pysheds==0.5",
 ]
 
 [tool.setuptools.packages.find]
