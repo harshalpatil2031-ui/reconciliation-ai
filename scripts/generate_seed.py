@@ -86,13 +86,25 @@ def _sample_cells(
     return np.column_stack(np.unravel_index(flat, hand.shape))
 
 
-def generate_seed(hand: np.ndarray, transform: rasterio.Affine, *, seed: int = SEED) -> list[dict]:
+def generate_seed(
+    hand: np.ndarray,
+    transform: rasterio.Affine,
+    *,
+    seed: int = SEED,
+    sar_water_fraction: np.ndarray | None = None,
+) -> list[dict]:
     """Create 300 case and 150 control parcels; all locations come from measured HAND."""
     hand = np.asarray(hand, dtype=np.float32)
     if hand.ndim != 2 or min(hand.shape) < 2:
         raise ValueError("HAND must be a 2D raster with at least two cells per dimension")
     if abs(transform.a) < 1e-8 or abs(transform.e) < 1e-8:
         raise ValueError("HAND raster transform must have non-zero pixel sizes")
+    if sar_water_fraction is not None:
+        sar_water_fraction = np.asarray(sar_water_fraction, dtype=np.float32)
+        if sar_water_fraction.shape != hand.shape:
+            raise ValueError("SAR water fraction raster must align with HAND")
+        if np.any(np.isfinite(sar_water_fraction) & ((sar_water_fraction < 0) | (sar_water_fraction > 1))):
+            raise ValueError("SAR water fraction values must be between 0 and 1")
     rng = np.random.default_rng(seed)
     if not np.any(np.isfinite(hand)):
         raise ValueError("HAND raster contains no finite elevations")
@@ -144,6 +156,10 @@ def generate_seed(hand: np.ndarray, transform: rasterio.Affine, *, seed: int = S
                     continue
             if role == "control" and float(hand[row, col]) < 8:
                 continue
+            if role == "control" and sar_water_fraction is not None:
+                water_fraction = float(sar_water_fraction[row, col])
+                if not np.isfinite(water_fraction) or water_fraction > 0.02:
+                    continue
             geometries.append(geom)
             accepted.append({
                 "geometry": geom,
@@ -279,11 +295,14 @@ def main() -> None:
         default=Path("data/rasters/terrain_hand_twi_32643.tif"),
     )
     parser.add_argument("--manifest", type=Path, default=Path("data/rasters/manifest.json"))
+    parser.add_argument("--sar-water-fraction", type=Path)
     parser.add_argument("--output", type=Path, default=Path("sql/04_seed_pune_july2024.sql"))
     parser.add_argument("--seed", type=int, default=SEED)
     args = parser.parse_args()
     if not args.hand.is_file():
         parser.error(f"measured HAND raster not found: {args.hand}; see data/rasters/SCENES.md")
+    if not args.sar_water_fraction or not args.sar_water_fraction.is_file():
+        parser.error("a measured, HAND-aligned SAR water-fraction raster is required for controls")
     if not args.manifest.is_file():
         parser.error(f"raster provenance manifest not found: {args.manifest}")
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
@@ -317,7 +336,20 @@ def main() -> None:
         ):
             parser.error("HAND raster must use the aligned 10 m target grid")
         hand = dataset.read(1, masked=True).astype("float32").filled(np.nan)
-        parcels = generate_seed(hand, dataset.transform, seed=args.seed)
+        sar_water = None
+        if args.sar_water_fraction:
+            with rasterio.open(args.sar_water_fraction) as sar_dataset:
+                if (
+                    sar_dataset.crs != dataset.crs
+                    or sar_dataset.transform != dataset.transform
+                    or sar_dataset.width != dataset.width
+                    or sar_dataset.height != dataset.height
+                ):
+                    parser.error("SAR water fraction raster must share HAND CRS, grid, and extent")
+                sar_water = sar_dataset.read(1, masked=True).astype("float32").filled(np.nan)
+        parcels = generate_seed(
+            hand, dataset.transform, seed=args.seed, sar_water_fraction=sar_water
+        )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(render_seed_sql(parcels), encoding="utf-8")
     print(json.dumps({"event_id": EVENT_ID, "seed": args.seed,

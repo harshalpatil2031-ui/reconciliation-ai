@@ -1,0 +1,81 @@
+"""Run Stage 1 optical measurements for the seeded event against verified rasters.
+
+The runner deliberately requires an explicit prepared-pixel input file. Raster
+registration and parcel pixel extraction are project-specific preparation steps;
+this runner will never infer or fabricate missing measurements.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+from typing import Any
+
+from pipeline.optical_loss import compute_parcel_satellite
+
+
+def run_batch(payload: dict[str, Any]) -> dict[str, Any]:
+    """Measure each case using prepared, provenance-tagged pixel stacks."""
+    provenance = payload.get("image_provenance", {})
+    if provenance.get("status") != "VERIFIED" or not provenance.get("scene_ids"):
+        raise ValueError("input must include verified image_provenance and scene_ids")
+    if payload.get("synthetic_inputs") is True:
+        raise ValueError("synthetic pixel inputs cannot be emitted as measured Stage 1 results")
+    parcels = payload.get("parcels")
+    if not isinstance(parcels, list) or not parcels:
+        raise ValueError("input must contain a non-empty parcels array")
+    if len(parcels) != 300:
+        raise ValueError(f"Stage 1 batch requires exactly 300 case parcels, received {len(parcels)}")
+    case_ids = [str(parcel.get("case_id", "")) for parcel in parcels]
+    if any(not case_id for case_id in case_ids) or len(set(case_ids)) != len(case_ids):
+        raise ValueError("every parcel must have a unique case_id")
+    rows = []
+    cfg = payload.get("config", {})
+    for parcel in parcels:
+        if not isinstance(parcel.get("rasters"), list) or not parcel["rasters"]:
+            raise ValueError(f"case {parcel['case_id']} must include measured raster arrays")
+        result = compute_parcel_satellite(
+            parcel, parcel["rasters"], parcel.get("controls_deficits", []), cfg, mode="v3"
+        )
+        estimate = result.observed_estimate
+        if not estimate or estimate.get("source") != "satellite":
+            raise ValueError(f"no valid satellite estimate for case {parcel['case_id']}")
+        value = estimate.get("value")
+        if value is None or not 0 <= float(value) <= 1:
+            raise ValueError(f"invalid satellite estimate for case {parcel['case_id']}")
+        rows.append({
+            "case_id": str(parcel["case_id"]),
+            "v_sat": round(float(value), 4),
+            "village": str(parcel.get("village", "")),
+            "geom_utm": parcel.get("geom_utm"),
+            "quality": result.quality_report,
+        })
+    return {
+        "schema_version": 1,
+        "event_id": payload.get("event_id"),
+        "mode": "v3",
+        "image_provenance": provenance,
+        "cases": rows,
+    }
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("input", type=Path, help="prepared per-parcel pixel stacks JSON")
+    parser.add_argument("--output", type=Path, default=Path("benchmark/measured_cases.json"))
+    args = parser.parse_args()
+    if not args.input.is_file():
+        parser.error(f"prepared Stage 1 input not found: {args.input}")
+    try:
+        payload = json.loads(args.input.read_text(encoding="utf-8"))
+        output = run_batch(payload)
+    except (ValueError, KeyError, TypeError) as exc:
+        parser.error(str(exc))
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_text(json.dumps(output, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+    print(json.dumps({"cases": len(output["cases"]), "mode": "v3", "output": str(args.output)}, indent=2))
+
+
+if __name__ == "__main__":
+    main()

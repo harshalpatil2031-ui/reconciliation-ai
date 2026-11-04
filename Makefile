@@ -6,8 +6,9 @@ S ?= 1
 HAND_RASTER ?= data/rasters/terrain_hand_twi_32643.tif
 RASTER_MANIFEST ?= data/rasters/manifest.json
 MEASURED_CASES ?= benchmark/measured_cases.json
+STAGE1_INPUT ?= benchmark/stage1_pixels.json
 
-.PHONY: up down schema counts snapshot restore test openapi check-rasters check-hazard seed-sql plant-anomalies
+.PHONY: up down schema counts snapshot restore test openapi check-rasters check-hazard seed-sql plant-anomalies batch stage1-handoff
 
 up:
 	docker compose up --build -d --wait
@@ -50,3 +51,9 @@ seed-sql:
 
 plant-anomalies:
 	python scripts/plant_anomalies.py "$(MEASURED_CASES)"
+
+batch:
+	python -m pipeline.run_batch_event "$(STAGE1_INPUT)" --output "$(MEASURED_CASES)"
+
+stage1-handoff:
+	python scripts/create_stage1_handoff.py --measured "$(MEASURED_CASES)" --manifest "benchmark/manifest.json" --snapshot "handoffs/stage1/stage1.dump" --output "handoffs/stage1/README.md"

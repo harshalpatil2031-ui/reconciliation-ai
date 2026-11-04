@@ -40,6 +40,27 @@ def test_seed_generator_is_deterministic_and_matches_parcel_counts() -> None:
     assert "ON CONFLICT (event_id, parcel_id) DO UPDATE SET" in seed_sql
 
 
+def test_seed_controls_respect_measured_sar_water_fraction() -> None:
+    hand = np.zeros((1000, 1000), dtype=float)
+    hand[:, 400:700] = 10.0
+    hand[:, 700:] = 12.0
+    sar_water = np.zeros_like(hand)
+    sar_water[:, :250] = 0.5
+    transform = Affine(10, 0, 300000, 0, -10, 2060000)
+    parcels = generate_seed(hand, transform, sar_water_fraction=sar_water)
+    controls = [row for row in parcels if row["role"] == "control"]
+    assert len(controls) == 150
+    assert all(sar_water[int((row["center"][1] - transform.f) / transform.e),
+                         int((row["center"][0] - transform.c) / transform.a)] <= 0.02
+               for row in controls)
+
+
+def test_seed_rejects_misaligned_sar_water_fraction() -> None:
+    hand = np.zeros((20, 20), dtype=float)
+    with pytest.raises(ValueError, match="must align with HAND"):
+        generate_seed(hand, Affine(10, 0, 0, 0, -10, 200), sar_water_fraction=np.zeros((10, 10)))
+
+
 def _measured_cases() -> list[dict]:
     cases = []
     for i in range(15):
