@@ -11,6 +11,18 @@
 | Sentinel-1A GRD peak | 2024-07-27 | VV, VH | 🔎 missing; product/pass metadata not measured |
 | HAND/TWI terrain | source date not applicable | HAND_m, TWI | ✅ derived from GLO-30; 30 m source resampled to 10 m; 3 km² D8 stream-initiation threshold is initial/untuned |
 
+## Sentinel acquisition search (2026-11-04)
+
+The Copernicus OData catalogue and Element84 Earth Search STAC catalogue were queried for the recorded AOI (73.81–74.19°E, 18.32–18.68°N) and the planned dates. The date-specific results do **not** support treating the originally planned files as available or valid:
+
+- **18 July 2024 Sentinel-2:** No product for the AOI's MGRS 43QCA tile was found. The product list initially returned by a non-spatial 18 July search was over unrelated locations and must not be used for Pune.
+- **3 August 2024 Sentinel-2:** No matching 43QCA L2A product was returned for that date; the catalogue instead showed acquisitions on 4 August and other adjacent days.
+- **13 August 2024 Sentinel-2:** No matching 43QCA L2A product was returned for that date.
+- **Nearby Sentinel-2 L2A tile 43QCA products:** 4 August reports 100% scene cloud cover, 14 August 86.54%, and 16 August 64.97%. The 16 August item (`S2B_43QCA_20240816_0_L2A`, product `S2B_MSIL2A_20240816T052649_N0511_R105_T43QCA_20240816T095204.SAFE`) is less cloudy but remains outside the planned dates and far below the 40% clear-pixel criterion at scene level. Its bands are available as public COGs, but they were not substituted for the requested dates or labeled as a valid baseline.
+- **Sentinel-1 GRD:** The public STAC search returned no AOI intersections from 10 July through 1 August 2024. The Copernicus OData July 15 and July 27 S1A IW dual-pol listings were scanned; no listed COG footprint vertices fell near the AOI. This does not establish that no alternate Sentinel-1 platform/pass/date exists; that requires a broader scene search and same-pass baseline review.
+
+As a result, there are no valid acquisitions to place in the required scene paths while preserving the specified event windows and quality criteria. The scene files remain absent and the overall raster check correctly stays unready. Do not substitute an acquisition solely because it is downloadable; P1 must record a date/pass change and verify usable SCL fraction or SAR coverage first.
+
 The optional post-event SAR scene near 2024-08-08 has not been searched for; it is not assumed to exist. Sentinel-2 L2A and Sentinel-1 GRD are discoverable from the [Copernicus Data Space Ecosystem](https://dataspace.copernicus.eu/about).
 
 ## Terrain processing record
