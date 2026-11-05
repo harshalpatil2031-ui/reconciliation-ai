@@ -51,8 +51,33 @@ class RejectedRequest {
   send(_body: TestFormData) { queueMicrotask(() => this.onload?.()); }
 }
 
+class NetworkFailureRequest {
+  upload = { onprogress: null as ((event: ProgressEvent) => void) | null };
+  onload: (() => void) | null = null;
+  onerror: (() => void) | null = null;
+  responseText = '';
+  open() {}
+  setRequestHeader() {}
+  send(_body: TestFormData) { queueMicrotask(() => this.onerror?.()); }
+}
+
+class CapturingRequest extends SuccessfulRequest {
+  static body: TestFormData | null = null;
+  send(body: TestFormData) {
+    CapturingRequest.body = body;
+    super.send(body);
+  }
+}
+
+class UploadFormData extends TestFormData {
+  append(name: string, value: unknown, filename?: string) {
+    super.append(name, filename ? { value, filename } : value);
+  }
+}
+
 afterEach(async () => {
   vi.unstubAllGlobals();
+  vi.useRealTimers();
   await new Promise<void>((resolve) => {
     const request = indexedDB.deleteDatabase('recon-ai');
     request.onsuccess = () => resolve();
@@ -105,5 +130,55 @@ describe('offline queue', () => {
     expect(saved.blobs).toHaveLength(0);
     expect(timer).not.toHaveBeenCalled();
     timer.mockRestore();
+  });
+
+  it('retains payload and token after a transient network error and schedules an exponential retry', async () => {
+    vi.stubGlobal('FormData', TestFormData);
+    const bundle = makeBundle();
+    await enqueueBundle(bundle);
+    const timer = vi.spyOn(window, 'setTimeout');
+    const requestFactory = () => new NetworkFailureRequest() as unknown as XMLHttpRequest;
+    await flushQueue('http://localhost:8000', undefined, undefined, requestFactory);
+    const [saved] = await listBundles();
+    expect(saved.status).toBe('PENDING');
+    expect(saved.attempts).toBe(1);
+    expect(saved.token).toBe('private-token');
+    expect(saved.payload).toEqual(bundle.payload);
+    expect(saved.blobs).toHaveLength(1);
+    expect(timer).toHaveBeenCalledWith(expect.any(Function), 2_000);
+  });
+
+  it('maps every burst frame to multipart data and clears private data after a successful upload', async () => {
+    vi.stubGlobal('FormData', UploadFormData);
+    SuccessfulRequest.sends = 0;
+    CapturingRequest.body = null;
+    const bundle = makeBundle();
+    bundle.payload!.photos[0].frames = ['photo0_frame0', 'photo0_frame1', 'photo0_frame2'];
+    bundle.blobs = [0, 1, 2].map((frame) => new window.Blob([`frame-${frame}`], { type: 'image/jpeg' }));
+    await enqueueBundle(bundle);
+    await flushQueue('http://localhost:8000', undefined, undefined, () => new CapturingRequest() as unknown as XMLHttpRequest);
+    const [saved] = await listBundles();
+    const requestBody = CapturingRequest.body as TestFormData | null;
+    expect(requestBody?.get('payload')).toBeTruthy();
+    expect(requestBody?.get('photo0_frame0')).toMatchObject({ value: bundle.blobs[0], filename: 'photo0_frame0.jpg' });
+    expect(requestBody?.get('photo0_frame1')).toMatchObject({ value: bundle.blobs[1], filename: 'photo0_frame1.jpg' });
+    expect(requestBody?.get('photo0_frame2')).toMatchObject({ value: bundle.blobs[2], filename: 'photo0_frame2.jpg' });
+    expect(saved.status).toBe('DONE');
+    expect(saved.token).toBeNull();
+    expect(saved.payload).toBeNull();
+    expect(saved.blobs).toHaveLength(0);
+  });
+
+  it('does not steal an upload lock that is still fresh', async () => {
+    vi.stubGlobal('FormData', TestFormData);
+    SuccessfulRequest.sends = 0;
+    const bundle = makeBundle();
+    bundle.status = 'UPLOADING';
+    bundle.uploadStartedAt = Date.now() - 1_000;
+    await enqueueBundle(bundle);
+    await flushQueue('http://localhost:8000', undefined, undefined, () => new SuccessfulRequest() as unknown as XMLHttpRequest);
+    const [saved] = await listBundles();
+    expect(SuccessfulRequest.sends).toBe(0);
+    expect(saved.status).toBe('UPLOADING');
   });
 });

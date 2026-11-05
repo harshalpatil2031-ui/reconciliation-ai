@@ -42,6 +42,7 @@
   "queued": "Queued reports",
   "camera_denied": "Camera access was not allowed. Change the permission in your browser settings.",
   "location_denied": "Location access is needed to submit a field report.",
+  "location_unavailable": "Could not get your location. Check that location services are on and try again.",
   "motion_denied": "Motion access is unavailable. You can continue without a compass.",
   "offline": "Offline",
   "online": "Connected",

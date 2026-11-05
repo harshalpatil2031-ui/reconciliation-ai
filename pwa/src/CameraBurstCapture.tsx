@@ -17,6 +17,7 @@ export default function CameraBurstCapture({ parcel, onCapture, count, copy }: P
   const stream = useRef<MediaStream | null>(null);
   const [cameraError, setCameraError] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const { fix, error: locationError, ready } = useGeolocation();
   const orientation = useOrientation();
@@ -31,13 +32,15 @@ export default function CameraBurstCapture({ parcel, onCapture, count, copy }: P
 
   async function openCamera() {
     try {
-      const orientationPermission = orientation.request();
+      void orientation.request().then((granted) => setMotionDenied(!granted));
       stream.current = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false
       });
-      if (video.current) video.current.srcObject = stream.current;
-      const granted = await orientationPermission;
-      setMotionDenied(!granted);
+      if (video.current) {
+        video.current.srcObject = stream.current;
+        await video.current.play();
+        if (video.current.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) setVideoReady(true);
+      }
       setCameraOpen(true);
     } catch { setCameraError(true); }
   }
@@ -51,6 +54,7 @@ export default function CameraBurstCapture({ parcel, onCapture, count, copy }: P
       for (let i = 0; i < 3; i += 1) {
         if (i) await new Promise((resolve) => window.setTimeout(resolve, 750));
         const element = video.current;
+        if (element.videoWidth <= 0 || element.videoHeight <= 0) throw new Error('Camera frame is not ready');
         const scale = Math.min(1, 1280 / Math.max(element.videoWidth, element.videoHeight));
         const canvas = document.createElement('canvas');
         canvas.width = Math.round(element.videoWidth * scale);
@@ -85,7 +89,7 @@ export default function CameraBurstCapture({ parcel, onCapture, count, copy }: P
   const headingOkay = !!fix && parcel && headingPointsToParcel(orientation.heading, fix.lat, fix.lon, parcel.parcel_bbox_wgs84);
   const levelOkay = orientation.pitch !== null && orientation.pitch >= 65 && orientation.pitch <= 88;
   const galleryMode = new URLSearchParams(window.location.search).get('mode') === 'gallery';
-  const disabled = !ready || !secondAngleReady || busy || count >= 2;
+  const disabled = !ready || !secondAngleReady || busy || count >= 2 || !videoReady;
 
   async function galleryUpload(file: File) {
     const image = await createImageBitmap(file);
@@ -111,9 +115,10 @@ export default function CameraBurstCapture({ parcel, onCapture, count, copy }: P
     </div>
     {!ready && <p role="status">{copy.gps_wait} {fix ? `(${Math.round(fix.acc)} m)` : ''}</p>}
     {locationError === 'denied' && <p className="error" role="alert">{copy.location_denied}</p>}
+    {locationError && locationError !== 'denied' && <p className="error" role="alert">{copy.location_unavailable}</p>}
     {motionDenied && <p role="status">{copy.compass_missing}</p>}
     {cameraError && <p className="error" role="alert">{copy.camera_denied}</p>}
-    <video ref={video} autoPlay muted playsInline className="camera-view" aria-label={copy.open_camera} />
+    <video ref={video} autoPlay muted playsInline onLoadedData={() => setVideoReady(true)} className="camera-view" aria-label={copy.open_camera} />
     <div className="camera-actions">
       {!cameraOpen && <button className="secondary" onClick={() => void openCamera()}>{copy.open_camera}</button>}
       <button disabled={disabled || !cameraOpen} onClick={() => void capture()}>{busy ? copy.move_slowly : copy.take_photo}</button>

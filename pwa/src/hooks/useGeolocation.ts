@@ -8,11 +8,12 @@ export function useGeolocation() {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     const freshnessTimer = window.setInterval(() => setNow(Date.now()), 1_000);
-    if (!navigator.geolocation) {
+    const geolocation = navigator.geolocation;
+    if (!geolocation) {
       setError('unsupported');
       return () => window.clearInterval(freshnessTimer);
     }
-    const watch = navigator.geolocation.watchPosition(
+    const watch = geolocation.watchPosition(
       (position) => {
         setError(null);
         setFix({ lat: position.coords.latitude, lon: position.coords.longitude,
@@ -21,7 +22,7 @@ export function useGeolocation() {
       (reason) => setError(reason.code === reason.PERMISSION_DENIED ? 'denied' : 'unavailable'),
       { enableHighAccuracy: true, maximumAge: 0 }
     );
-    return () => { window.clearInterval(freshnessTimer); navigator.geolocation.clearWatch(watch); };
+    return () => { window.clearInterval(freshnessTimer); geolocation.clearWatch(watch); };
   }, []);
   const ready = !!fix && fix.acc <= 25 && now - fix.timestamp < 10_000;
   return { fix, error, ready };
