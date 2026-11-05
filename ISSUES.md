@@ -1,319 +1,98 @@
-# Reconciliation AI — Issue Backlog
+# Prototype issues — four-person build
 
-**Prepared:** 1 November 2026  
-**Submission deadline:** 10 November 2026  
-**Ownership:** Four roles — P1 (Data & Satellite), P2 (Ground Evidence & PWA), P3 (Decision Engine & Reports), P4 (Dashboard & Demo).  
-**Purpose:** Actionable implementation issues for the 10 November 2026 prototype submission, organized around the four-person P1–P4 implementation work.
+These are the **four active work items** for the smaller, dynamic classroom prototype. They are ready to copy into GitHub. Keep the old P1–P4 technical backlog for future work; it is not the prototype acceptance plan. Closed/completed issues must stay closed and retain their history.
 
-## 1. Executive summary
+## Issue 1 — Person 1: synthetic cases and shared data contract
 
-The project has three distinct documents: an older AI-heavy prototype specification, the revised v3 technical specification, and the detailed four-person relay plan. The relay plan is the implementation source of truth because it maps v3 decisions to concrete work packages and acceptance checks. The older AI document should be treated as historical context where it conflicts with v3.
+**Title:** `[PROTO-P1] Prepare synthetic case fixtures and prototype data contract`
+**Owner:** Person 1 — Data & Scenarios
+**Priority:** Prototype critical
+**Labels:** `prototype`, `data`
+**Depends on:** None. This contract unblocks P2, P3 and P4.
 
-The biggest shift is architectural: v3 replaces unvalidated predictive claims and blended scoring with an evidence-led, human-reviewed system. It keeps observed damage separate from hazard context; uses satellite and verified ground evidence; emits flags, evidence grades, and traceable factors; and does not autonomously decide compensation.
+Create 3–6 small, hand-authored example cases for the demo and agree the JSON shape with P2–P4.
 
-## 2. Version comparison and disposition
+**Acceptance criteria**
 
-| Topic | Older AI implementation | v3 direction | Backlog disposition |
-|---|---|---|---|
-| Damage / hazard scoring | Weighted aggregation mixes rainfall, infrastructure risk, ground NLP, satellite scores | Separate observed damage from hazard plausibility; hazard explains context, not damage | Implement v3 separation; do not carry old weighted score forward |
-| Satellite model | Siamese CNN and model-performance claims | Control-differenced optical loss, sub-pixel geometry, dual loss metrics, multi-index time windows, gated SAR | Use transparent v3 pipeline; validate every threshold and label synthetic results |
-| Root cause | Random Forest + SHAP on proposed labels | Deterministic contributing-factor screen with evidence trace | Use factor codes/rules; remove unsupported ML cause probabilities |
-| Confidence | Numeric confidence formula and bands | Evidence Strength Grade A–D plus spatial block-bootstrap intervals | Implement grade rubric and report intervals; avoid probability-like confidence |
-| Ground language | IndicBERT fine-tuning and free-text severity extraction | Structured form first; language model only consistency check; MahaBERT benchmark | Keep structured Marathi form; defer model training pending labeled corpus |
-| Photos | ResNet-50 / broad GPS validation | Frustum, pitch/horizon, burst liveness, embedding dedup, crop consistency | Implement v3 photo checks; no single image classifier as proof |
-| Identity/privacy | Aadhaar hashing is described in older version | No Aadhaar; case/Gat/Agri Stack references and pseudonymous tokens | Enforce no Aadhaar collection and scrub identifiers |
-| Payout decision | Prototype score and mismatch tiers risk implying decisions | Human review only; system is QA/triage | Preserve human decision and reasoned review trail |
-| Data / claims | Older source contains accuracy claims and proposed external feeds | v3 status tags distinguish verified, unverified, synthetic, target, roadmap | Audit claims and label all demo/benchmark numbers |
-| Implementation plan | Older document describes model modules; work split maps v3 into staged WPs | Four-person relay with gates, interfaces and test criteria | Treat work-split WPs and global contracts as executable issue plan |
+- Include a near-threshold disagreement, a consistent example and a missing-evidence example.
+- Mark every case and number synthetic; do not imply parcel-level measurements are real.
+- Document fields, status values, reason text and missing-value behavior.
+- Keep fixtures small and readable; no rasters, 450-parcel world, real claims or database snapshot.
 
-### Key version conflicts to resolve explicitly
+**Deliverables:** `fixtures/demo_cases.json` and a short data dictionary.
 
-1. **Do not mix hazard context into observed damage.** Rainfall, dam release, HAND and TWI are explanatory plausibility signals, not extra terms in the damage score.
-2. **Do not revive the Siamese CNN, Random Forest/SHAP, IndicBERT severity model, or weighted evidence formula** unless a separately approved, labeled-data evaluation justifies a future change.
-3. **Do not report older model metrics as current performance.** The v3 rule is measured numbers only, with synthetic versus real origin stated.
-4. **Keep system output advisory.** The officer remains the decision maker; the tool must not approve or reject compensation.
-5. **Use the relay’s global decision register (D-1 onward)** and record any new implementation contract change in the contract change log.
+## Issue 2 — Person 2: Marathi farmer intake
 
-## 3. Issue conventions and ownership
+**Title:** `[PROTO-P2] Connect the Marathi farmer intake to the local demo API`
+**Owner:** Person 2 — Farmer Intake
+**Priority:** Prototype critical
+**Labels:** `prototype`, `farmer-pwa`
+**Depends on:** P1 fixture/payload agreement and P3's localhost API contract.
 
-- **Priority:** P0 blocks safe/core implementation; P1 required for the prototype exit gates; P2 important quality or pilot readiness; P3 future/pilot.
-- **Labels:** `v3`, `version-reconciliation`, plus area labels such as `satellite`, `ground-evidence`, `decision-engine`, `frontend`, `privacy`, `benchmark`, `docs`, `integration`.
-- **Dependencies:** Stage gates are real dependencies. Work in parallel only where the relay’s waiting-time section allows fixture/stub work.
-- **Dependency enforcement:** Before starting or merging an issue, the assignee or AI agent must inspect its blocker issues in the tracker. If any blocker is not **Done/Closed**, report the blocking IDs, statuses, owners, and missing handoff/artifact; do not start dependent integration work. Only explicitly separable fixture/stub tasks allowed by the relay may continue, and the issue cannot be marked complete until blockers clear.
-- **Definition of done:** acceptance checks below are evidenced in the relevant handoff README and tests/demo artifacts specified by the work split.
-- **People:** P1–P4 match the four-person file. Replace labels with actual names when available; assignments are otherwise ready to use.
+Use the existing Marathi/English PWA form in standalone demo mode. POST submissions to the local demo service and make clear that this is synthetic demonstration data.
 
-## 4. Proposed issues by owner
+**Acceptance criteria**
 
-## Person 1 (P1) — Data Foundation & Satellite Evidence
+- `/?demo=1` works without a case token, user account, camera, GPS or compass.
+- User can complete the form and submit to the local API.
+- A successful save is confirmed; API errors are explained and can be retried.
+- Standalone demo flow does not require a photo; no photo is described as verified.
+- The PWA test covers the dynamic submit flow.
 
-### P1-01 — Establish the v3 data foundation and frozen contracts
-**Priority:** P0 · **Labels:** `v3`, `data-foundation`, `integration`  
-**Scope:** Implement environment, Docker/PostGIS schema, configuration, API shell/router stubs, shared enums and JSON contracts from relay Sections 2 and 3.  
-**Acceptance criteria:**
-- Schema and configuration load from a clean local setup.
-- Required enums and cross-stage payloads match the relay contracts.
-- API stubs return documented shapes.
-- Any clarification is recorded in the contract change log before downstream consumers depend on it.
-**Blocked by:** None. **Blocks:** P1-02, P1-03, P1-04, P1-05, P2-01, P2-04, P3-01, P4-01.
+**Deferred:** production upload, offline sync guarantees, native-device field validation.
 
-### P1-02 — Build reproducible raster and hazard inputs
-**Priority:** P1 · **Labels:** `v3`, `satellite`, `hazard`  
-**Scope:** Prepare/validate raster inputs and ingest rainfall, river/dam/discharge, HAND and TWI context per v3 and WP-1.4/1.5. Keep hazard fields separate from damage observations.  
-**Acceptance criteria:**
-- Inputs have recorded source, date range, CRS, resolution, nodata handling and licensing/provenance.
-- Raster checks pass and missing/low-quality layers produce explicit quality flags.
-- Hazard plausibility is stored separately and never added to the damage estimate.
-- Unverified sources/settings are tagged 🔎 or 🎯; simulated inputs are 🧪.
-- **Blocked by:** P1-01.
+## Issue 3 — Person 3: local API and explainable rules
 
-### P1-03 — Implement parcel geometry, controls and peer-ready features
-**Priority:** P1 · **Labels:** `v3`, `satellite`, `geospatial`  
-**Scope:** Prepare parcels, adaptive buffer/sub-pixel overlap weights, effective pixel count, controls and parcel geometry quality fields.  
-**Acceptance criteria:**
-- Narrow strip parcels are retained; no fixed negative buffer can erase them.
-- Area weights and (n_{eff}) are persisted and exposed to downstream analysis.
-- Small/low-support parcels receive explicit quality limitations rather than fabricated precision.
-- Peer/control candidates retain crop/phenology and assessor/village/date fields required by P3.
-- **Blocked by:** P1-01, P1-02.
+**Title:** `[PROTO-P3] Build the local SQLite API and explainable demo rules`
+**Owner:** Person 3 — Backend & Rules
+**Priority:** Prototype critical
+**Labels:** `prototype`, `backend`
+**Depends on:** P1 fixture contract. P2 and P4 consume the API contract.
 
-### P1-04 — Implement v3 optical satellite damage metrics
-**Priority:** P1 · **Labels:** `v3`, `satellite`, `validation`  
-**Scope:** Implement unclipped Difference-in-Differences, final-step clipping, mean loss and damaged-area fraction, and two-window NDVI/NDRE/NDMI trajectory flags.  
-**Acceptance criteria:**
-- Tests prove control deficits are not clipped before differencing.
-- Both (L_{attr}) and (A_{dmg}) are reported; (V_{sat} = max(L_{attr}, A_{dmg})) follows the relay contract.
-- Water-submerged pixels are not treated as final vegetation loss before recession.
-- Silt recovery and delayed waterlogging signals are separately represented when scenes exist.
-- Missing scenes / clouds produce quality flags and grade-limiting inputs.
-- **Blocked by:** P1-01, P1-02, P1-03.
+Build a small localhost-only FastAPI service backed by SQLite. Serve P1's fixtures; accept/list farmer demo reports; allow an officer to record a demo review note; support reset. Return a simple deterministic explanation tied to submitted and fixture values.
 
-### P1-05 — Implement gated SAR inundation evidence
-**Priority:** P1 · **Labels:** `v3`, `satellite`, `validation`  
-**Scope:** Add speckle filtering, Ashman bimodality gate, physical open-water bounds, and HAND/control-gated double-bounce detection.  
-**Acceptance criteria:**
-- Unimodal scenes do not trigger Otsu-only classification.
-- Positive backscatter is not treated as flood without low HAND, pre-event vegetation, and control-relative rise conditions.
-- SAR outputs and quality flags are traceable per parcel.
-- 🎯 thresholds remain marked as initial until measured/calibrated.
-- **Blocked by:** P1-01, P1-02, P1-03.
+**Acceptance criteria**
 
-### P1-06 — Seed the benchmark world and hand off Stage 1
-**Priority:** P1 · **Labels:** `v3`, `benchmark`, `handoff`  
-**Scope:** Create the planned parcel fixtures, simulated official records and planted anomaly classes; provide batch runner, tests, versioned database snapshot and handoff.  
-**Acceptance criteria:**
-- Manifest documents every synthetic field and planted case class.
-- Required classes and counts follow the relay contract; no planted value is silently altered.
-- Batch run is repeatable/idempotent and snapshot can be restored.
-- Exit Gate 1 checklist is complete and P2 can start from the handoff README alone.
-**Blocked by:** P1-01, P1-02, P1-03, P1-04, P1-05. **Blocks:** P2-01, P2-05, P3-01, P3-02, P4-03.
+- `GET /demo/cases`, `GET/POST /demo/reports`, `POST /demo/reports/{id}/review`, and `DELETE /demo/reports` work locally.
+- Report validation rejects invalid ranges and enumerations.
+- Data survives server/page refresh and reset clears demo submissions.
+- Missing evidence remains null/unknown.
+- Tests cover fixture load, create/list, review and reset.
+- App is clearly demo-only and run bound to localhost; no authentication or production-readiness claim.
 
-## Person 2 (P2) — Ground Evidence: Photo Verifier & Farmer PWA
+**Deferred:** PostgreSQL/PostGIS workflow, full v3 endpoints, production auth, audit hash-chain and deployment.
 
-### P2-01 — Implement parcel-aware photo intake and frustum checks
-**Priority:** P1 · **Labels:** `v3`, `ground-evidence`, `geospatial`  
-**Scope:** Add photo schema and spatial helpers, camera location/direction inputs, frustum intersection, pitch/horizon and parcel-boundary checks per WP-2.1/2.2.  
-**Acceptance criteria:**
-- Inside-parcel, neighbor-farm, puddle/low-pitch and outside-boundary fixtures reproduce the documented tiers/flags.
-- Missing compass is downgraded per the relay decision; it is not treated as proof of fraud.
-- Original image EXIF is stripped from stored/served derivatives and farmer references are masked in logs.
-- Spatial thresholds are configurable and documented.
-- **Blocked by:** P1-01, P1-06.
+## Issue 4 — Person 4: officer review and demo walkthrough
 
-### P2-02 — Add burst liveness and screen-spoof detection
-**Priority:** P1 · **Labels:** `v3`, `ground-evidence`, `anti-spoofing`  
-**Scope:** Capture multi-frame bursts and implement parallax/Moiré checks with explicit quality outcomes.  
-**Acceptance criteria:**
-- Genuine-burst and screen-spoof test bundles exercise the checks.
-- Failed liveness is excluded from pooling where the relay contract requires; low quality alone maps to the specified tier.
-- Calibration evidence/distributions are recorded and no synthetic benchmark is represented as real field validation.
-- **Blocked by:** P2-01; P1-06 for parcel-linked integration.
+**Title:** `[PROTO-P4] Build the dynamic officer review screen and demo walkthrough`
+**Owner:** Person 4 — Officer View & Demo
+**Priority:** Prototype critical
+**Labels:** `prototype`, `demo`, `frontend`
+**Depends on:** P1 fixture contract and P3 API; coordinate integration with P2.
 
-### P2-03 — Add embedding deduplication and crop consistency
-**Priority:** P1 · **Labels:** `v3`, `ground-evidence`, `ml-evaluation`  
-**Scope:** Implement pgvector-backed photo deduplication and declared-crop consistency check with a measured fixture set.  
-**Acceptance criteria:**
-- Cropped/rotated/brightness-shifted duplicate case is caught per configured threshold.
-- Distinct-field false-positive checks are reported alongside duplicate recall.
-- Crop classifier output is a consistency flag, not a final damage decision.
-- Model, weights, license and threshold provenance are captured.
-- **Blocked by:** P2-01; P1-06 for parcel-linked integration.
+Build a compact officer view consuming P3's local API. Show P1's synthetic scenarios and farmer reports created through P2; allow a demo-only review action.
 
-### P2-04 — Build Marathi structured intake and offline PWA
-**Priority:** P1 · **Labels:** `v3`, `farmer-pwa`, `accessibility`  
-**Scope:** Build camera/orientation guide, structured Marathi form, offline queue, upload idempotency and consent/help copy per WP-2.7–2.9.  
-**Acceptance criteria:**
-- User can capture bundle, complete structured fields and queue/upload while offline/online.
-- Retry cannot create duplicate submissions.
-- Form fields feed documented contract shape; free text is supplemental consistency evidence.
-- Marathi strings are reviewed and accessibility/camera permission failures are handled.
-- **Blocked by:** P1-01; shell/form work can proceed against a stub before Stage 1 handoff.
+**Acceptance criteria**
 
-### P2-05 — Package photo fixtures, licenses and Stage 2 handoff
-**Priority:** P1 · **Labels:** `v3`, `ground-evidence`, `handoff`, `privacy`  
-**Scope:** Gather/license-check example photos, create the six demo bundles, implement ground tier/estimate API and hand off Stage 2.  
-**Acceptance criteria:**
-- Fixture manifest states source/license and synthetic/real status for every bundle.
-- All six expected scenarios match the relay truth table, including duplicate, screen spoof and missing compass.
-- Tier 3 pooling/exclusion semantics follow frozen D-2; no ambiguity leaks to P3.
-- Exit Gate 2 is complete and snapshot restores cleanly.
-**Blocked by:** P1-06, P2-01, P2-02, P2-03, P2-04. **Blocks:** P3-01, P3-03, P3-05, P3-06.
+- Shows official, satellite-style, farmer-reported and missing evidence distinctly.
+- Each case explains its displayed status from its fixture values.
+- New farmer submissions appear after saving and after page refresh.
+- Officer can record a local demo review note/status.
+- UI states all cases are synthetic and never presents automatic approval/denial.
+- Provide setup/reset steps and a 3–5 minute script; walkthrough runs with local services only.
 
-## Person 3 (P3) — Decision Engine, Audit & Reports
+**Deferred:** maps/frustums, full queue API, fairness monitor, benchmark claims and pilot.
 
-### P3-01 — Reconcile satellite and ground evidence safely
-**Priority:** P0 · **Labels:** `v3`, `decision-engine`, `integration`  
-**Scope:** Implement observation pooling, source conflict behavior, satellite fallback interval, boundary-surfing guard and missing-source states per D5/WP-3.1.  
-**Acceptance criteria:**
-- Conflict preserves satellite interval so detectors continue rather than crash.
-- Satellite-backed and ground-driven 33% crossings are distinguishable.
-- Ground-only/satellite-only/no-observation cases match shared enums.
-- Both conflict examples in the relay's local decisions are covered.
-- Hazard context never enters numerical observation pooling.
-**Blocked by:** P1-01, P1-06, P2-05. **Blocks:** P3-02, P3-03, P3-06, P4-02.
-
-### P3-02 — Implement peer, timing, cluster and boundary detectors
-**Priority:** P1 · **Labels:** `v3`, `decision-engine`, `detectors`  
-**Scope:** Implement A–D detectors and peer selection with cross-assessor peer minimum, phenology fallback, HAND-adjusted timing and cluster-bias detection.  
-**Acceptance criteria:**
-- Cross-assessor share requirement and minimum cohort behavior match the relay decisions.
-- Crop/sowing-date null path uses the specified spectral phenology fallback.
-- Detector C handles unavailable recession evidence as CANNOT_ASSESS.
-- Blanket village/assessor bias fires when the v3 cohort gap rule is met.
-- Detector outputs use documented triggered/not-triggered/cannot-assess semantics and include evidence traces.
-- **Blocked by:** P1-03, P1-06, P3-01.
-
-### P3-03 — Build contributing-factor screen and evidence grade
-**Priority:** P1 · **Labels:** `v3`, `decision-engine`, `explainability`  
-**Scope:** Add deterministic factor codes and A–D evidence grade; use observability and limitations, not model probability.  
-**Acceptance criteria:**
-- All configured factor codes and firing/suppression rules are implemented.
-- Each factor includes its input values and supporting evidence identifiers.
-- Grade rubric is explicit, deterministic and caps grades for low clear fraction/small parcels/missing inputs as specified.
-- Output does not expose unsupported “confidence %” as a calibrated probability.
-- **Blocked by:** P1-04, P1-05, P2-05, P3-01, P3-02.
-
-### P3-04 — Implement UTC-stable tamper-evident audit and idempotent analysis
-**Priority:** P1 · **Labels:** `v3`, `audit`, `privacy`  
-**Scope:** Canonical UTC timestamp hashing, JSON array canonicalization, primary keys/upserts, append-only audit log and verifier.  
-**Acceptance criteria:**
-- Verification is stable across database timezone settings.
-- Repeated analysis/review does not duplicate case outputs.
-- Tampering is detected and concurrent writes preserve chain ordering.
-- Audit entries avoid Aadhaar and mask farmer/officer identifiers as designed.
-- **Blocked by:** P1-01.
-
-### P3-05 — Produce bilingual template reports with robust numeric verification
-**Priority:** P1 · **Labels:** `v3`, `reports`, `localization`  
-**Scope:** Build deterministic Marathi/English templates and verifier for decimal/percent equivalence, dates, Devanagari digits and direction checks.  
-**Acceptance criteria:**
-- Valid values like decimal and percentage forms pass, including Devanagari numerals.
-- Wrong, unsupported, reversed and invented numeric claims fail verification.
-- Report text cannot alter source values or the case tier.
-- Marathi wording is reviewed by P2/native speaker.
-- **Blocked by:** P2-05, P3-01, P3-03.
-
-### P3-06 — Integrate analysis API, smoke fixtures and Stage 3 handoff
-**Priority:** P1 · **Labels:** `v3`, `api`, `handoff`  
-**Scope:** Wire `/analyze`, `/report`, `/audit/verify`; generate detection/factor/report fixtures and run integration handoff.  
-**Acceptance criteria:**
-- Every manifest case has a detection, grade, factors, report and audit link, including insufficient-evidence cases.
-- API response matches frozen contracts and repeat calls are idempotent.
-- Stage 3 handoff documents limitations, tests, known gaps and required downstream behavior.
-**Blocked by:** P1-06, P2-05, P3-01, P3-02, P3-03, P3-04, P3-05. **Blocks:** P4-01, P4-02, P4-03, P4-04.
-
-## Person 4 (P4) — Officer Dashboard, Benchmark & Demo
-
-### P4-01 — Build read/review APIs and typed UI contracts
-**Priority:** P1 · **Labels:** `v3`, `api`, `frontend`  
-**Scope:** Implement queue/case/photo/review read APIs and response models used by the dashboard.  
-**Acceptance criteria:**
-- Filtering, ordering, facets and pagination behave per relay WP-4.1.
-- High-priority dismissal requires a reason and writes review plus audit records.
-- API responses validate against fixtures and typed client models.
-- **Blocked by:** P1-01, P3-06; fixture scaffolding may proceed before handoff.
-
-### P4-02 — Build evidence-first officer dashboard
-**Priority:** P1 · **Labels:** `v3`, `frontend`, `accessibility`  
-**Scope:** Implement queue, evidence ladder, parcel/frustum map, factor/grade cards, report/review panels and fairness monitor.  
-**Acceptance criteria:**
-- Shows official record, satellite observation, ground evidence and hazard context as distinct sections.
-- Renders both satellite loss metrics, flags, grade limitations and evidence provenance.
-- Map geometry/photo frustums match server-side spatial checks.
-- Human review controls require reason codes where specified and expose audit outcome.
-- Fairness view can filter/disaggregate by strip width and relevant groups, with limits explained.
-- **Blocked by:** P3-06, P4-01; fixture-mode components may proceed during waiting time.
-
-### P4-03 — Benchmark v3 against legacy design and report honest results
-**Priority:** P1 · **Labels:** `v3`, `benchmark`, `version-reconciliation`  
-**Scope:** Build injection benchmark and v2/v3 ablation where feasible; compare detector behavior without presenting synthetic cases as real-world validation.  
-**Acceptance criteria:**
-- Manifest, injection classes, metrics, intervals and thresholds are documented.
-- Results tag synthetic data 🧪, show uncertainty intervals and state what they do not establish.
-- Comparison isolates changed components and records excluded/future ablations.
-- No old AI accuracy claim is copied into project materials as a current result.
-- **Blocked by:** P1-06, P3-06.
-
-### P4-04 — Deliver offline-ready demo, attribution and handoff
-**Priority:** P1 · **Labels:** `v3`, `demo`, `docs`, `handoff`  
-**Scope:** Contract tests, offline smoke path, pitch/demo/Q&A, rehearsals and backup video.  
-**Acceptance criteria:**
-- Demo succeeds with network disabled and a documented recovery path.
-- All presented numbers trace to tagged results or verified sources.
-- Q&A accurately states limits, synthetic inputs, human-in-loop and privacy safeguards.
-- Exit Gate 4 checklist and final known-limitations/not-implemented list are complete.
-- **Blocked by:** P3-06, P4-01, P4-02, P4-03.
-
-## 5. Execution order (submission: 10 Nov 2026)
-
-1. **P1 foundation:** P1-01, then P1-02 and P1-03; implement P1-04/P1-05 after their inputs are ready; finish with P1-06 and the Stage 1 handoff.
-2. **P2 ground evidence:** Start integration after the Stage 1 handoff. Complete P2-01, then P2-02/P2-03/P2-04, and finish with P2-05 and the Stage 2 handoff.
-3. **P3 decision engine:** Start integration after the Stage 2 handoff. Complete P3-01, then P3-02/P3-03/P3-04/P3-05, and finish with P3-06 and the Stage 3 handoff.
-4. **P4 dashboard and demo:** Build API/UI work from fixtures while waiting where allowed; integrate after the Stage 3 handoff. Complete P4-01, P4-02/P4-03, then P4-04.
-
-## 6. Risks and open questions
-
-- Actual names for P1–P4 are not provided in the work-split file; map the role labels to the four GitHub assignees.
-- The detailed implementation plan referenced by the work split may not be present; follow the relay WPs and record any unresolved specification gap before implementation depends on it.
-- Thresholds marked 🎯 remain calibration settings, not validated performance claims.
-- The older AI document includes proposed metrics/models and formulas that conflict with v3; treat them as retired unless specifically re-evaluated.
-
-## 7. Source mapping
-
-- **v3 spec:** D1–D16; §§4–10; database schema; modules for parcels, optical/SAR, hazard context, ground verification, pooling, detectors, factors, grades, reports, APIs and dashboard.
-- **AI version:** modules 1–5, weighted aggregation, random-forest root cause, confidence scoring, LLM report proposal, ethics and deferred scope.
-- **Four-person work split:** role names, relay dependencies, WPs, global decisions, handoff/exit gates, risk register, waiting-time work and pilot roadmap.
-
----
-*Issue descriptions are ready to copy into an issue tracker; IDs here are local backlog IDs and do not imply issues were created externally.*
-
-## 8. Dependency graph and tracker behavior
-
-### Critical path
+## Dependency order
 
 ```text
-P1-01 → P1-02 → P1-03 ─┬→ P1-04 ─┐
-                        └→ P1-05 ─┴→ P1-06 (Stage 1 handoff)
-  └→ P2-04 stub work may proceed while P1 is active
-P1-06 → P2-01 → P2-02 / P2-03 ─┐
-P1-06 + P1-01 → P2-04 ──────────┴→ P2-05 (Stage 2 handoff)
-P1-06 + P2-05 → P3-01 → P3-02 ─┐
-                                 ├→ P3-03 / P3-05 → P3-06 (Stage 3 handoff)
-P1-01 → P3-04 ──────────────────┘
-P3-06 → P4-01 → P4-02 ─┐
-P1-06 + P3-06 → P4-03 ──┴→ P4-04
+PROTO-P1 ──┬──> PROTO-P2 ──┐
+           ├──> PROTO-P3 ──┼──> PROTO-P4 integration and demo
+           └───────────────┘
 ```
 
-This graph is a summary. Each issue's **Blocked by** line is authoritative. Commas mean all listed blockers must be Done/Closed, except explicitly allowed fixture/stub work.
+P2 and P3 can proceed in parallel once their shared request/response shape is agreed. P4 builds against fixtures while the local API is in progress, then integrates. Database snapshots, real imagery, phone testing and pilot approvals are not prototype blockers.
 
-### Blocker check required when an issue is picked up
+## Tracker migration note
 
-For every issue, the assigned person or AI agent should:
-
-1. Read **Blocked by** and fetch each referenced issue's live tracker status.
-2. If any blocker is open, in progress, or otherwise not Done/Closed, stop blocked implementation and report: `Blocked by <ID> — <status> — <owner> — <missing handoff/decision>`.
-3. Do not mark the dependent issue Done while any blocker remains unresolved.
-4. Continue only work explicitly marked as fixture/stub or waiting-time work in the relay. Keep it isolated and label the issue partially blocked.
-5. When blockers close, verify the promised contract, handoff or artifact exists before proceeding; closing a ticket alone is insufficient if its acceptance criteria are unmet.
-
-In the issue tracker, map each **Blocked by** ID to a native “is blocked by” link. Keep local IDs in titles/descriptions so an AI coding agent can resolve dependencies even when tracker links are unavailable. Check live status when work is picked up.
+GitHub's current open issues #12–#26 still describe the earlier field-system scope. Replace their active milestone with these four prototype work items or mark the non-prototype tasks deferred; do not reopen closed issues. The connected GitHub integration rejected issue create/update requests (403), and the local `gh` credential is invalid, so no tracker mutations were completed in this pass. The local files and code are ready for the four scoped work items.

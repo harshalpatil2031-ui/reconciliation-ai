@@ -2,8 +2,10 @@
 
 ## Revised Technical Implementation Document (v3)
 
-> **Team:** PCCOE Indradhanu · **Stage:** Round 2 prototype → 24-hour hackathon & pilot readiness
-> **Revision date:** 1 November 2026 · **Supersedes:** v2 (`Reconciliation_AI_Implementation_v2.md`) and v1 (`Reconciliation_AI_Implementation.md`)
+> **Status update (November 2026):** This is the ambitious future technical vision, not the acceptance scope for the current prototype. The current deliverable is a small local demonstration with labeled synthetic scenarios and human review; see [`PROTOTYPE_SCOPE.md`](PROTOTYPE_SCOPE.md) and [`reconciliation_ai_work_split.md`](reconciliation_ai_work_split.md). Real satellite ingestion, field verification, production services, calibrated models, security certification, and pilot readiness are deferred. Nothing in this document should be read as evidence those items have been implemented or validated.
+
+> **Team:** PCCOE Indradhanu · **Status:** future technical vision; superseded as the current demo acceptance plan by `PROTOTYPE_SCOPE.md`
+> **Revision date:** 1 November 2026 · **Design lineage:** builds on v2 (`Reconciliation_AI_Implementation_v2.md`) and v1 (`Reconciliation_AI_Implementation.md`)
 > **What this version is:** v3 retains the sound two-pillar architecture of v2 (separating *Observed Damage* from *Hazard Plausibility*) while fixing critical vulnerabilities discovered during adversarial and geometric stress-testing: farmer photo spoofing and neighbor-plot fraud, riverine strip-parcel geometry erasure, Difference-in-Differences truncation bias, silt-vs-root-rot spectral confusion, SAR Otsu unimodal failure, 33% threshold-surfing in pooling, village-wide blanket-panchnama blindness, SQL timezone hash drift, and percentage/Devanagari bugs in the LLM numeric verifier.
 
 ## 0. Read this first

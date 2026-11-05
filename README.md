@@ -1,76 +1,62 @@
-# Reconciliation AI — Maharashtra Flood Compensation QA
+# Reconciliation AI — Evidence-led crop-loss review demo
 
-An evidence-led, human-reviewed quality-assurance system for reconciling crop-loss assessments with satellite and verified ground evidence. It helps officers prioritize review; it does not approve or deny compensation.
+A classroom prototype that demonstrates a simple workflow: a farmer submits a short Marathi/English report, an explainable rule compares a few evidence fields, and an officer reviews the case. It is advisory; it never decides compensation.
 
-## Source of truth
+## Current scope
 
-Use **`reconciliation_ai_implementation_v3.md`** for the current technical design and **`reconciliation_ai_work_split.md`** for the four-person ownership, work packages, shared contracts, dependency decisions, handoffs, and exit gates. Read both before implementing a feature. If they conflict, resolve the ambiguity through the relay decision register and record the result in its contract change log; do not silently choose an interpretation.
+Read [`PROTOTYPE_SCOPE.md`](PROTOTYPE_SCOPE.md) first. The live demo is intentionally small and uses labeled synthetic cases. It demonstrates the workflow and how conflicting or missing evidence should be surfaced. Synthetic values do not describe real farms and do not establish accuracy.
 
-The v3 spec references companion v2 validation/build-plan material and a detailed implementation plan that are not currently present in this repository. Track recovery or replacement of those references under **X-04** before pilot planning.
+- **v3 design:** [`reconciliation_ai_implementation_v3.md`](reconciliation_ai_implementation_v3.md) is retained as a future technical vision, not the demo checklist.
+- **Four-person plan:** [`reconciliation_ai_work_split.md`](reconciliation_ai_work_split.md) describes the lightweight P1–P4 demo deliverables.
+- **Issues:** [`ISSUES.md`](ISSUES.md) maps the remaining work and dependencies; completed work stays recorded as completed.
+- **History and provenance:** [`IMPLEMENTATION.md`](IMPLEMENTATION.md), [`DATA_PROVENANCE.md`](DATA_PROVENANCE.md), and [`contracts/CHANGELOG.md`](contracts/CHANGELOG.md).
+- **Pilot:** [`PILOT_READINESS.md`](PILOT_READINESS.md) is explicitly deferred and is not authorization to use live data.
 
-**`IMPLEMENTATION.md` is the historical prototype proposal.** Its Siamese CNN, weighted evidence score, IndicBERT severity model, Random Forest/SHAP, numeric confidence score, and LLM report proposal are superseded where they conflict with v3. Do not present its unverified metrics as current results.
+## Prototype experience
 
-## Project documents
+1. Open the farmer intake in Marathi or English and answer a few structured questions.
+2. Complete the short form; the standalone walkthrough does not require camera, location or compass permission.
+3. Save the report through the small local FastAPI/SQLite demo service.
+4. Open the officer view, compare labeled evidence and live submissions, read why a case is flagged, and record a demo-only review note.
+5. Reset and repeat with one of the bundled synthetic scenarios.
 
-| File | Purpose |
-|---|---|
-| [`reconciliation_ai_implementation_v3.md`](reconciliation_ai_implementation_v3.md) | Current technical specification: evidence model, data/schema, satellite and ground methods, detectors, grading, reports, API, and dashboard. |
-| [`reconciliation_ai_work_split.md`](reconciliation_ai_work_split.md) | Four-person relay plan: P1–P4 roles, contracts, work packages, decision register, handoffs, blockers, and exit gates. |
-| [`ISSUES.md`](ISSUES.md) | Tracker-ready backlog with owners, acceptance criteria, blockers, dependency graph, and AI-agent blocker-check procedure. |
-| [`contracts/CHANGELOG.md`](contracts/CHANGELOG.md) | Baseline register for relay decisions D-1 through D-22 and a template for future contract changes. |
-| [`DATA_PROVENANCE.md`](DATA_PROVENANCE.md) | Starter register for data, model, photo and claim provenance; entries still require source/license review. |
-| [`docs/REFERENCE_GAPS.md`](docs/REFERENCE_GAPS.md) | Missing v2/detailed-plan references and the owner/action needed to close each gap. |
-| [`PILOT_READINESS.md`](PILOT_READINESS.md) | Draft four-week shadow-pilot plan; prerequisites and approvals are still pending. |
-| [`IMPLEMENTATION.md`](IMPLEMENTATION.md) | Historical prototype AI proposal, retained for comparison only. |
-| `.github/ISSUE_TEMPLATE/` | GitHub issue templates, including required blocker fields. |
+No external data service, government account or live imagery is required for the walkthrough. The 24–26 July 2024 Khadakwasla event may be used as narrative context only; any parcel-level evidence shown remains synthetic unless separately sourced and approved.
 
-The four roles are called P1–P4 because the source work-split document does not contain team members’ names. Map them to actual GitHub assignees while preserving the role responsibilities.
+## Local setup
 
-## Issue workflow and dependencies
-
-Keep each backlog ID (for example, `P1-01` or `X-01`) in the GitHub issue title. Link every **Blocked by** item using GitHub’s native dependency relationship where available. Before starting an issue, the assignee or AI agent must check the live status and required handoff artifacts for every blocker. If a blocker is not Done/Closed, report its ID, status, owner, and missing handoff; only isolated fixture/stub work explicitly permitted by the relay may proceed. Do not close a dependent issue until its blockers and acceptance criteria are satisfied.
-
-Start with X-01, then X-02, then P1-01. Follow the dependency graph and stage gates in `ISSUES.md`; its per-issue **Blocked by** fields are authoritative.
-
-## Version and evidence rules
-
-- Observed damage and hazard plausibility remain separate; hazard context does not enter the numerical damage estimate.
-- A human officer makes the compensation decision.
-- Tag claims and numbers as verified, unverified, synthetic, initial/untuned, or roadmap according to the v3 status legend.
-- Do not describe synthetic benchmark results as real-world performance.
-- Do not collect Aadhaar.
-
-## Repository status
-
-The initial data foundation is now scaffolded: PostgreSQL/PostGIS/pgvector schema, typed shared configuration and contracts, FastAPI endpoint stubs, raster quality/alignment helpers, and hazard-context extraction. Satellite source files, authorized rainfall/discharge inputs, populated demo data, production APIs, and benchmark outputs are not included yet. Consult the v3 spec’s scope and the relay exit gates before treating any feature as implemented.
-
-## Local foundation setup
-
-Requirements: Docker Compose and Python 3.11 or newer.
+Requirements: Python 3.11 or newer and Node.js for the PWA. Docker is optional for the existing backend scaffold.
 
 ```sh
-cp .env.example .env
-make up
-make schema
 python -m pip install -r requirements.txt
 make test
-make openapi
+cd pwa
+npm ci
+npm test
+npm run build
 ```
 
-The API runs with `uvicorn backend.main:app`. Stage-owned API routes currently return HTTP 501; `/health` reports database availability and the active configuration digest. The database initialization SQL is safe to apply repeatedly with `make schema`.
+For the local dynamic walkthrough, start these in separate terminals from the repository root:
 
-After the source rasters and hazard JSON inputs have been acquired and their licenses recorded, run `make check-rasters` and `make check-hazard`. Both commands emit quality reports and exit nonzero while required source files are missing or invalid; they never replace missing evidence with zero-valued measurements.
+```sh
+python -m uvicorn backend.demo_app:app --host 127.0.0.1 --port 8001
+cd pwa
+npm run dev
+```
 
-## Optical pipeline
+Open `http://localhost:5173/?demo=1`. Choose **Open officer demo** to review the bundled examples, or submit a farmer demo report; the SQLite-backed API makes it appear in the officer view, where it can be marked reviewed. **Reset demo reports** clears local demo submissions. This isolated API is demo-only, has no authentication, and must be bound to localhost; it does not call a government or production service. Demo mode does not request camera, location or motion permissions.
 
-The optical pipeline expects aligned per-scene arrays and does not claim scene acquisition or validation. Its onset flag uses the earliest selected post-event scene with attributable loss; with only two windows, timing cannot be localized more precisely. Missing scenes return `NO_VALID_OPTICAL_SCENE`; low clear fraction and low spatial support carry a grade cap of C for the downstream grader. Supply the parcel preparation result as each scene's `parcel_stack` so its fractional pixel weights and aligned spectral arrays are used by the optical metrics. Scenes without an explicit water mask or NDWI water evidence are skipped and flagged rather than counted as vegetation loss.
+The standalone walkthrough skips photo capture. The existing camera flow remains in the non-demo PWA path. The original v3 backend and production integrations are still scaffolding; several routes return HTTP 501. The demo API is separate and uses a local SQLite file. Do not describe either API as a government or production integration.
 
-## Parcel preparation
+## Prototype rules
 
-`pipeline/parcel_prep.py` supersamples pixel/parcel intersections at the configured factor, applies the 5 m interior buffer only to parcels at least 35 m wide, and preserves narrow parcels using squared overlap weights. It also provides effective-pixel reliability, deterministic per-taluka spectral clustering, matched upland-control selection, async persistence of cluster labels and sparse per-pixel weights, and a snapped raster-window reader. Persisted scene observations include the sparse overlap grid and `n_eff_pixels`; parcel rows retain the measured minimum width. No pre-event source rasters are included, so this repository does not claim actual scene dates or populated clusters. When rasters are supplied, pass all available pre-event NDVI observations (late May through mid-July where available) and the last pre-event NDMI to the clustering function; missing scenes are not fabricated.
+- Label every example case and displayed measure as **synthetic**.
+- Keep observed loss separate from hazard/context notes.
+- Explain each demo flag with the input values that produced it.
+- Missing evidence remains missing; it is not silently converted to zero.
+- Show “needs human review” or “insufficient evidence,” never automatic approve/deny language.
+- Do not collect Aadhaar, real farmer identity, or government records in the demo.
+- Do not claim model accuracy, field validation, pilot readiness or decision support effectiveness.
 
-`pipeline/sar_inundation.py` applies a 3×3 Lee speckle filter, uses Otsu only when the 2 km neighborhood passes a smoothed-histogram peak/valley check and the Ashman-D gate, and requires low HAND, pre-event vegetation, and control-relative backscatter rise for double-bounce evidence. Per-scene SAR fractions and gate diagnostics can be persisted to `scene_observations`. SAR thresholds in `config/defaults.yaml` are **initial and untuned**; they must not be presented as measured regional performance.
+## Deferred work
 
-## Stage 1 seed preparation
-
-`make derive-terrain` rebuilds the two-band HAND/TWI product from the documented Copernicus GLO-30 source tiles. The source is approximately 30 m; the output is resampled to the 10 m project grid and the stream threshold is initial/untuned. `make seed-sql` creates the fixed 300-case/150-control synthetic parcel world from that terrain raster. First run `make check-rasters`; `make batch STAGE1_INPUT=...` then runs the v3 optical estimator on prepared per-parcel pixel stacks and checks their scene IDs against the generated quality report, including source and license status. It writes measured per-case results. `make plant-anomalies` requires those measured results and writes official claims, the manifest, and ground scenarios. It fails when an exact anomaly stratum or contiguous riverside group is unavailable; thresholds and measured values are never fabricated or relaxed. `make snapshot S=1` saves a PostgreSQL custom-format snapshot. `make stage1-handoff` writes a checksum-bearing handoff only when measured outputs, manifest, and snapshot exist. The Sentinel inputs, measured run, database snapshot, and Stage 1 handoff are not present yet: `data/rasters/SCENES.md` records that the optical and SAR scenes are still missing, and Docker is needed for database seeding/snapshot. Therefore P1-06 remains incomplete until the missing scenes are supplied, the drainage threshold is calibrated, prepared pixel stacks are produced, and all acceptance checks pass.
+Real satellite/rainfall ingestion, parcel-level measurement, trained models, anti-spoofing, production offline synchronization, server-side duplicate prevention, authentication, audit/security certification, field studies and shadow-pilot work are future projects. See `PROTOTYPE_SCOPE.md` for the boundary and acceptance checklist.

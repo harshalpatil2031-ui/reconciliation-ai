@@ -1,12 +1,12 @@
 name: Work item from the v3 backlog
-description: Create an issue linked to a backlog ID and its blockers.
+description: Create an issue linked to the lightweight prototype backlog.
 title: "[P1-01] Short task title"
 labels: ["v3"]
 body:
   - type: markdown
     attributes:
       value: |
-        Copy the matching issue from `reconciliation_ai_v3_ai_issues.md`. Keep its local ID in the title. Check every blocker before starting.
+        Follow `PROTOTYPE_SCOPE.md` and `ISSUES.md`. The v3 field system is future work, not a demo gate. Keep the local ID in the title and check only prototype dependencies.
   - type: input
     id: backlog_id
     attributes:
@@ -31,7 +31,7 @@ body:
     id: blocked_by
     attributes:
       label: Blocked by
-      description: List blocker issue IDs and links. Use “None” if there are no blockers.
+      description: List prototype blockers only. Real data, raster processing and pilot work are not demo blockers.
       placeholder: "P1-01 (link) — must be Done; Stage 1 handoff snapshot available"
     validations:
       required: true
