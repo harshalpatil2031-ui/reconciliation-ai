@@ -1,26 +1,56 @@
 [
   {
+    "schema_version": 1,
     "id": "CASE-DEMO-01",
-    "title": "Near threshold",
-    "official_pct": 20,
-    "satellite_style_pct": 40,
+    "title": "Near threshold disagreement",
+    "data_status": "SYNTHETIC",
+    "official_pct": 30,
+    "satellite_style_pct": 36,
+    "farmer_report_pct": 34,
+    "review_threshold_pct": 33,
+    "source_labels": {
+      "official_pct": "SYNTHETIC",
+      "satellite_style_pct": "SYNTHETIC",
+      "farmer_report_pct": "SYNTHETIC",
+      "review_threshold_pct": "SYNTHETIC_DEMO_RULE"
+    },
     "status": "NEEDS_HUMAN_REVIEW",
-    "reason": "The two illustrative sources disagree across the review threshold."
+    "reason": "Synthetic official example (30%) is below the illustrative 33% demo line, while the synthetic satellite-style example (36%) and farmer report (34%) are above it. A person should compare the sources; this is not an eligibility rule."
   },
   {
+    "schema_version": 1,
     "id": "CASE-DEMO-02",
     "title": "Evidence agrees",
+    "data_status": "SYNTHETIC",
     "official_pct": 55,
     "satellite_style_pct": 58,
+    "farmer_report_pct": 56,
+    "review_threshold_pct": 33,
+    "source_labels": {
+      "official_pct": "SYNTHETIC",
+      "satellite_style_pct": "SYNTHETIC",
+      "farmer_report_pct": "SYNTHETIC",
+      "review_threshold_pct": "SYNTHETIC_DEMO_RULE"
+    },
     "status": "CONSISTENT_FOR_DEMO",
-    "reason": "The two illustrative values are close in this example."
+    "reason": "Synthetic official example (55%), satellite-style example (58%), and farmer report (56%) are all above the illustrative 33% demo line and within 3 percentage points of one another, so this example is consistent for the demo."
   },
   {
+    "schema_version": 1,
     "id": "CASE-DEMO-03",
-    "title": "Missing evidence",
+    "title": "Missing satellite-style evidence",
+    "data_status": "SYNTHETIC",
     "official_pct": 35,
     "satellite_style_pct": null,
+    "farmer_report_pct": 42,
+    "review_threshold_pct": 33,
+    "source_labels": {
+      "official_pct": "SYNTHETIC",
+      "satellite_style_pct": "MISSING",
+      "farmer_report_pct": "SYNTHETIC",
+      "review_threshold_pct": "SYNTHETIC_DEMO_RULE"
+    },
     "status": "INSUFFICIENT_EVIDENCE",
-    "reason": "Satellite-style evidence is unavailable; the missing value stays unknown."
+    "reason": "Synthetic official example (35%) and farmer report (42%) are present, but the satellite-style value is missing (unknown). The evidence is insufficient; no value is inferred."
   }
 ]
