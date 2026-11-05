@@ -17,6 +17,8 @@ from pydantic import BaseModel, Field
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "fixtures" / "demo_cases.json"
+DEMO_OFFICIAL_PCT = 20
+DEMO_SATELLITE_STYLE_PCT = 40
 
 
 def database_path() -> Path:
@@ -96,26 +98,57 @@ def get_reports() -> list[dict[str, object]]:
 
 
 def serialize_report(row: sqlite3.Row) -> dict[str, object]:
+    form = json.loads(row["form_json"])
     return {
         "id": row["id"],
         "created_at": row["created_at"],
         "locale": row["locale"],
-        "form": json.loads(row["form_json"]),
+        "form": form,
         "status": row["status"],
         "review_note": row["review_note"],
-        "official_pct": 20,
-        "satellite_style_pct": 40,
-        "explanation": dynamic_explanation(json.loads(row["form_json"])),
+        "official_pct": DEMO_OFFICIAL_PCT,
+        "satellite_style_pct": DEMO_SATELLITE_STYLE_PCT,
+        "explanation": dynamic_explanation(
+            official_pct=DEMO_OFFICIAL_PCT,
+            satellite_style_pct=DEMO_SATELLITE_STYLE_PCT,
+            farmer_report_pct=form["damaged_share_pct"],
+        ),
         "data_status": "synthetic demo example",
     }
 
 
-def dynamic_explanation(form: dict[str, object]) -> str:
-    farmer_pct = int(form["damaged_share_pct"])
-    difference = abs(farmer_pct - 40)
-    if difference >= 25:
-        return f"Farmer report ({farmer_pct}%) differs from the illustrative satellite-style value (40%); ask a person to compare the sources."
-    return f"Farmer report ({farmer_pct}%) and the illustrative satellite-style value (40%) are shown side by side for human review."
+def dynamic_explanation(
+    *,
+    official_pct: int | None,
+    satellite_style_pct: int | None,
+    farmer_report_pct: int | None,
+) -> str:
+    """Explain the displayed demo values without interpreting missing evidence as zero."""
+    values = {
+        "official assessment": official_pct,
+        "satellite-style example": satellite_style_pct,
+        "farmer report": farmer_report_pct,
+    }
+    missing = [name for name, value in values.items() if value is None]
+    if missing:
+        unknown = ", ".join(missing)
+        return (
+            f"Insufficient evidence: {unknown} is unknown. No missing value is inferred; "
+            "a person must review the available evidence."
+        )
+
+    shown = ", ".join(f"{name} ({value}%)" for name, value in values.items())
+    present_values = [value for value in values.values() if value is not None]
+    spread = max(present_values) - min(present_values)
+    if spread >= 25:
+        return (
+            f"Synthetic demo values: {shown}. They span {spread} percentage points; "
+            "ask a person to compare the sources. This is not an eligibility decision."
+        )
+    return (
+        f"Synthetic demo values: {shown}. They are shown side by side for human review; "
+        "this is not an eligibility decision."
+    )
 
 
 @app.post("/demo/reports", status_code=201)
@@ -135,9 +168,13 @@ def create_report(report: DemoReportIn) -> dict[str, object]:
         "form": form,
         "status": "NEEDS_HUMAN_REVIEW",
         "review_note": None,
-        "official_pct": 20,
-        "satellite_style_pct": 40,
-        "explanation": dynamic_explanation(form),
+        "official_pct": DEMO_OFFICIAL_PCT,
+        "satellite_style_pct": DEMO_SATELLITE_STYLE_PCT,
+        "explanation": dynamic_explanation(
+            official_pct=DEMO_OFFICIAL_PCT,
+            satellite_style_pct=DEMO_SATELLITE_STYLE_PCT,
+            farmer_report_pct=form["damaged_share_pct"],
+        ),
         "data_status": "synthetic demo example",
     }
 
