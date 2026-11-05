@@ -1,5 +1,5 @@
 blank_issues_enabled: true
 contact_links:
-  - name: 📋 Issue Backlog (all 20 issues with blockers)
-    url: https://github.com/PCCOE-Indradhanu/reconciliation-ai/blob/main/reconciliation_ai_v3_ai_issues.md
-    about: Find the full backlog with owner assignments, acceptance criteria, and the dependency graph before creating a new issue.
+  - name: 📋 Prototype scope and backlog
+    url: https://github.com/harshalpatil2031-ui/reconciliation-ai/blob/main/PROTOTYPE_SCOPE.md
+    about: Read the current demo boundary, four-person plan and active prototype issue scope.
