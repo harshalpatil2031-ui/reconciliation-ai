@@ -40,6 +40,17 @@ class TestFormData {
   get(name: string) { return this.entries.get(name) ?? null; }
 }
 
+class RejectedRequest {
+  upload = { onprogress: null as ((event: ProgressEvent) => void) | null };
+  onload: (() => void) | null = null;
+  onerror: (() => void) | null = null;
+  responseText = 'request rejected';
+  constructor(public status: number) {}
+  open() {}
+  setRequestHeader() {}
+  send(_body: TestFormData) { queueMicrotask(() => this.onload?.()); }
+}
+
 afterEach(async () => {
   vi.unstubAllGlobals();
   await new Promise<void>((resolve) => {
@@ -77,5 +88,22 @@ describe('offline queue', () => {
     expect(saved.token).toBeNull();
     expect(saved.payload).toBeNull();
     expect(saved.blobs).toHaveLength(0);
+  });
+
+  it.each([404, 413])('stops retrying permanent HTTP %i errors and clears private bundle data', async (status) => {
+    vi.stubGlobal('FormData', TestFormData);
+    const bundle = makeBundle();
+    await enqueueBundle(bundle);
+    const timer = vi.spyOn(window, 'setTimeout');
+    const requestFactory = () => new RejectedRequest(status) as unknown as XMLHttpRequest;
+    await flushQueue('http://localhost:8000', undefined, undefined, requestFactory);
+    const [saved] = await listBundles();
+    expect(saved.status).toBe('FAILED');
+    expect(saved.attempts).toBe(1);
+    expect(saved.token).toBeNull();
+    expect(saved.payload).toBeNull();
+    expect(saved.blobs).toHaveLength(0);
+    expect(timer).not.toHaveBeenCalled();
+    timer.mockRestore();
   });
 });

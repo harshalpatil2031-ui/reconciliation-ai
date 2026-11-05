@@ -59,11 +59,13 @@ export default function App() {
       status: 'PENDING', attempts: 0, lastError: null, createdAt: Date.now() };
     await enqueueBundle(bundle);
     setStep('received');
+    setMessage(navigator.onLine ? copy.sending : copy.saved_offline);
     if (navigator.onLine) {
       await flushQueue(API, refreshQueue, (id, value) => setProgress((p) => ({ ...p, [id]: value })));
       const latest = (await listBundles()).find((item) => item.id === signature);
-      if (latest?.status === 'FAILED') setMessage(latest.lastError || copy.upload_error);
-      else if (latest?.status === 'PENDING') setMessage(copy.saved_offline);
+      if (latest?.status === 'DONE') setMessage(copy.upload_success);
+      else if (latest?.status === 'FAILED') setMessage(latest.lastError || copy.upload_error);
+      else setMessage(copy.upload_pending);
     } else setMessage(copy.saved_offline);
   }
 
@@ -81,12 +83,12 @@ export default function App() {
       <button onClick={() => setStep('camera')}>{copy.continue}</button></>}
     {step === 'camera' && <><CameraBurstCapture parcel={parcel} count={photos.length} copy={copy}
       onCapture={(photo) => setPhotos((old) => old.length < 2 ? [...old, photo] : old)} />
-      <div className="button-row"><button className="secondary" onClick={() => setStep('form')}>{copy.continue}</button>
+      <div className="button-row">{photos.length === 0 && <button className="secondary" onClick={() => setStep('form')}>{copy.continue}</button>}
         {photos.length === 1 && <button className="secondary" onClick={() => setStep('review')}>{copy.skip_second}</button>}
         {photos.length >= 2 && <button onClick={() => setStep('review')}>{copy.review_send}</button>}</div></>}
     {step === 'review' && <section className="card"><h2>{copy.review_send}</h2><p>{copy.damage_q}: {form.damaged_share_pct}%</p>
       <p>{copy.photos_count}: {photos.length}</p><button onClick={() => void submit()}>{copy.send}</button></section>}
-    {step === 'received' && <section className="card"><h2>{copy.received}</h2><p role="status">{message || copy.saved_offline}</p>
+    {step === 'received' && <section className="card"><h2>{copy.report_saved}</h2><p role="status">{message || copy.saved_offline}</p>
       <button className="secondary" onClick={() => setStep('review')}>{copy.retry}</button></section>}
     {!!queue.length && <section className="queue"><h2>{copy.queued}</h2>{queue.filter((item) => item.caseId === caseId).map((item) =>
       <p key={item.id}>{item.status} {progress[item.id] ? `${progress[item.id]}%` : ''} {item.lastError || ''}</p>)}</section>}

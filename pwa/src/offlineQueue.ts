@@ -2,6 +2,7 @@ import type { GroundPayload, QueuedBundle } from './lib/types';
 
 const DB_NAME = 'recon-ai';
 const STORE = 'bundles';
+const PERMANENT_HTTP_STATUSES = new Set([400, 401, 403, 404, 409, 413, 422]);
 
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -84,7 +85,7 @@ async function upload(
       if (event.lengthComputable) onProgress?.(bundle.id, Math.round(event.loaded / event.total * 100));
     };
     request.onload = () => request.status >= 200 && request.status < 300
-      ? resolve() : reject(Object.assign(new Error(request.responseText || `HTTP ${request.status}`), { permanent: [403, 409, 422].includes(request.status) }));
+      ? resolve() : reject(Object.assign(new Error(request.responseText || `HTTP ${request.status}`), { permanent: PERMANENT_HTTP_STATUSES.has(request.status) }));
     request.onerror = () => reject(new Error('Network error'));
     request.send(body);
   });

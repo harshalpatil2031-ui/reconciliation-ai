@@ -20,6 +20,7 @@ Client signatures are deterministic upload identifiers, not authentication or de
 ## Not yet complete
 
 - Ground API, database writes, server-side idempotency, photo verification, and real case-context integration.
+- Optional voice-note capture and transcription.
 - Device compass field calibration and native-speaker review of Marathi strings.
 - Licensed real-photo collection and demo bundle attribution; see the root [`ATTRIBUTION.md`](../ATTRIBUTION.md).
 - End-to-end offline upload acceptance on a phone.

@@ -46,6 +46,10 @@
   "offline": "Offline",
   "online": "Connected",
   "upload_error": "Could not send yet. Your report is saved on this device.",
+  "report_saved": "Report saved",
+  "sending": "Sending your report…",
+  "upload_success": "Your report has been sent for officer review.",
+  "upload_pending": "Your report is saved on this device. Upload will retry when a connection is available.",
   "empty_case": "Open the link shared with your case to begin.",
   "decrease": "Decrease",
   "increase": "Increase"

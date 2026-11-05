@@ -7,6 +7,13 @@ import en from './i18n/en.json';
 import mr from './i18n/mr.json';
 import type { GroundForm } from './lib/types';
 
+vi.mock('./CameraBurstCapture', () => ({
+  default: ({ onCapture }: { onCapture: (photo: { signature: string; telemetry: { lat: number; lon: number; acc_m: number; azimuth_deg: number | null; pitch_deg: number | null; captured_at: string }; frames: Blob[]; inAppCapture: boolean }) => void }) =>
+    <button onClick={() => onCapture({ signature: 'photo-1',
+      telemetry: { lat: 18.5, lon: 73.9, acc_m: 5, azimuth_deg: 90, pitch_deg: 75, captured_at: new Date().toISOString() },
+      frames: [new Blob(['frame'], { type: 'image/jpeg' })], inAppCapture: true })}>Capture test photo</button>
+}));
+
 vi.mock('./offlineQueue', () => ({
   enqueueBundle: vi.fn(),
   flushQueue: vi.fn().mockResolvedValue(undefined),
@@ -51,5 +58,16 @@ describe('Marathi and English intake', () => {
     expect(screen.getByLabelText(mr.damage_q)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'English' }));
     expect(screen.getByLabelText(en.damage_q)).toBeInTheDocument();
+  });
+
+  it('keeps the camera step mounted after the first photo so the second-photo gate is retained', () => {
+    window.history.replaceState({}, '', '/?case=case-456&t=test-token');
+    render(<App />);
+    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByRole('button', { name: mr.start_report }));
+    fireEvent.click(screen.getByRole('button', { name: mr.continue }));
+    fireEvent.click(screen.getByRole('button', { name: 'Capture test photo' }));
+    expect(screen.getByRole('button', { name: mr.skip_second })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: mr.continue })).not.toBeInTheDocument();
   });
 });
