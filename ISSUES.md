@@ -9,7 +9,7 @@ These are the **four active work items** for the smaller, dynamic classroom prot
 **Owner:** Person 1 — Data & Scenarios
 **Priority:** Prototype critical
 **Labels:** `prototype`, `data`
-**Depends on:** None. This contract unblocks P2, P3 and P4.
+**Depends on:** None. This contract unblocks [#40](https://github.com/harshalpatil2031-ui/reconciliation-ai/issues/40), [#41](https://github.com/harshalpatil2031-ui/reconciliation-ai/issues/41), and [#42](https://github.com/harshalpatil2031-ui/reconciliation-ai/issues/42).
 
 Create 3–6 small, hand-authored example cases for the demo and agree the JSON shape with P2–P4.
 
@@ -29,7 +29,7 @@ Create 3–6 small, hand-authored example cases for the demo and agree the JSON 
 **Owner:** Person 2 — Farmer Intake
 **Priority:** Prototype critical
 **Labels:** `prototype`, `farmer-pwa`
-**Depends on:** P1 fixture/payload agreement and P3's localhost API contract.
+**Depends on:** [#39](https://github.com/harshalpatil2031-ui/reconciliation-ai/issues/39) for the fixture/payload agreement; coordinate the localhost API contract with [#41](https://github.com/harshalpatil2031-ui/reconciliation-ai/issues/41). Check that #39 is complete before integration.
 
 Use the existing Marathi/English PWA form in standalone demo mode. POST submissions to the local demo service and make clear that this is synthetic demonstration data.
 
@@ -50,7 +50,7 @@ Use the existing Marathi/English PWA form in standalone demo mode. POST submissi
 **Owner:** Person 3 — Backend & Rules
 **Priority:** Prototype critical
 **Labels:** `prototype`, `backend`
-**Depends on:** P1 fixture contract. P2 and P4 consume the API contract.
+**Depends on:** [#39](https://github.com/harshalpatil2031-ui/reconciliation-ai/issues/39) for the fixture contract. Publish the API contract for [#40](https://github.com/harshalpatil2031-ui/reconciliation-ai/issues/40) and [#42](https://github.com/harshalpatil2031-ui/reconciliation-ai/issues/42); check that #39 is complete before fixture-backed integration.
 
 Build a small localhost-only FastAPI service backed by SQLite. Serve P1's fixtures; accept/list farmer demo reports; allow an officer to record a demo review note; support reset. Return a simple deterministic explanation tied to submitted and fixture values.
 
@@ -72,7 +72,7 @@ Build a small localhost-only FastAPI service backed by SQLite. Serve P1's fixtur
 **Owner:** Person 4 — Officer View & Demo
 **Priority:** Prototype critical
 **Labels:** `prototype`, `demo`, `frontend`
-**Depends on:** P1 fixture contract and P3 API; coordinate integration with P2.
+**Depends on:** [#39](https://github.com/harshalpatil2031-ui/reconciliation-ai/issues/39) for the fixture contract and [#41](https://github.com/harshalpatil2031-ui/reconciliation-ai/issues/41) for live API integration; coordinate submissions with [#40](https://github.com/harshalpatil2031-ui/reconciliation-ai/issues/40). The UI may be built against fixtures while #41 is in progress.
 
 Build a compact officer view consuming P3's local API. Show P1's synthetic scenarios and farmer reports created through P2; allow a demo-only review action.
 
