@@ -1,9 +1,10 @@
 # Prototype issues — four-person build
 
-These are the **four active work items** for the smaller, dynamic classroom prototype. They are ready to copy into GitHub. Keep the old P1–P4 technical backlog for future work; it is not the prototype acceptance plan. Closed/completed issues must stay closed and retain their history.
+These are the **four active work items** for the smaller, dynamic classroom prototype. The matching GitHub issues are live. The older P1–P4 technical backlog is deferred future work, not the prototype acceptance plan. Closed issues retain their history and include links to the replacements.
 
 ## Issue 1 — Person 1: synthetic cases and shared data contract
 
+**GitHub issue:** [#39](https://github.com/harshalpatil2031-ui/reconciliation-ai/issues/39)
 **Title:** `[PROTO-P1] Prepare synthetic case fixtures and prototype data contract`
 **Owner:** Person 1 — Data & Scenarios
 **Priority:** Prototype critical
@@ -23,6 +24,7 @@ Create 3–6 small, hand-authored example cases for the demo and agree the JSON 
 
 ## Issue 2 — Person 2: Marathi farmer intake
 
+**GitHub issue:** [#40](https://github.com/harshalpatil2031-ui/reconciliation-ai/issues/40)
 **Title:** `[PROTO-P2] Connect the Marathi farmer intake to the local demo API`
 **Owner:** Person 2 — Farmer Intake
 **Priority:** Prototype critical
@@ -43,6 +45,7 @@ Use the existing Marathi/English PWA form in standalone demo mode. POST submissi
 
 ## Issue 3 — Person 3: local API and explainable rules
 
+**GitHub issue:** [#41](https://github.com/harshalpatil2031-ui/reconciliation-ai/issues/41)
 **Title:** `[PROTO-P3] Build the local SQLite API and explainable demo rules`
 **Owner:** Person 3 — Backend & Rules
 **Priority:** Prototype critical
@@ -64,6 +67,7 @@ Build a small localhost-only FastAPI service backed by SQLite. Serve P1's fixtur
 
 ## Issue 4 — Person 4: officer review and demo walkthrough
 
+**GitHub issue:** [#42](https://github.com/harshalpatil2031-ui/reconciliation-ai/issues/42)
 **Title:** `[PROTO-P4] Build the dynamic officer review screen and demo walkthrough`
 **Owner:** Person 4 — Officer View & Demo
 **Priority:** Prototype critical
@@ -95,4 +99,4 @@ P2 and P3 can proceed in parallel once their shared request/response shape is ag
 
 ## Tracker migration note
 
-GitHub's current open issues #12–#26 still describe the earlier field-system scope. Replace their active milestone with these four prototype work items or mark the non-prototype tasks deferred; do not reopen closed issues. The connected GitHub integration rejected issue create/update requests (403), and the local `gh` credential is invalid, so no tracker mutations were completed in this pass. The local files and code are ready for the four scoped work items.
+The earlier field-system issues #12–#26 were closed as not planned for the current classroom prototype. Each has a closure comment linking to the replacement issue(s). Keep the detailed v3 backlog as future planning; new prototype work should use issues #39–#42 and check their dependency notes before starting.
