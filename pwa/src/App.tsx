@@ -12,7 +12,7 @@ const DEMO_API = 'http://127.0.0.1:8001';
 const initialForm: GroundForm = { damaged_share_pct: 50, water_depth_band: 'NONE', water_days: 0, crop_stage: 'VEGETATIVE', note: null };
 
 interface DemoCase { id: string; title: string; official_pct: number; satellite_style_pct: number | null; status: string; reason: string }
-interface DemoReport { id: string; created_at: string; form: GroundForm; status: string; review_note: string | null; official_pct: number; satellite_style_pct: number; explanation: string }
+interface DemoReport { id: string; created_at: string; form: GroundForm; status: string; review_note: string | null; official_pct: number; satellite_style_pct: number; explanation: string; data_status: string }
 
 export default function App() {
   const params = useMemo(() => new URLSearchParams(window.location.search), []);
@@ -32,7 +32,10 @@ export default function App() {
   const [consented, setConsented] = useState(false);
   const [demoCases, setDemoCases] = useState<DemoCase[]>([]);
   const [demoReports, setDemoReports] = useState<DemoReport[]>([]);
-  const [demoError, setDemoError] = useState('');
+  const [lastSubmittedReport, setLastSubmittedReport] = useState<DemoReport | null>(null);
+  const [demoLoadError, setDemoLoadError] = useState('');
+  const [demoSubmitError, setDemoSubmitError] = useState('');
+  const demoError = demoSubmitError || demoLoadError;
 
   const refreshQueue = useCallback(async () => {
     const bundles = await listBundles();
@@ -48,8 +51,8 @@ export default function App() {
           ]);
           if (!caseResponse.ok || !reportResponse.ok) throw new Error('Demo API is unavailable');
           const [cases, reports] = await Promise.all([caseResponse.json(), reportResponse.json()]);
-          if (active) { setDemoCases(cases); setDemoReports((current) => current.length ? current : reports); setDemoError(''); }
-        } catch { if (active) setDemoError('Start the local demo API to load and save reports.'); }
+          if (active) { setDemoCases(cases); setDemoReports((current) => current.length ? current : reports); setDemoLoadError(''); }
+        } catch { if (active) setDemoLoadError('Start the local demo API to load and save reports.'); }
       };
       void loadDemo();
       return () => { active = false; };
@@ -75,12 +78,19 @@ export default function App() {
         const response = await fetch(`${DEMO_API}/demo/reports`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ locale, form })
         });
-        if (!response.ok) throw new Error('Demo report could not be saved');
+        if (!response.ok) throw new Error('The local demo API did not save this report. Check that the service is running, then retry.');
         const report = await response.json() as DemoReport;
         setDemoReports((old) => [report, ...old.filter((item) => item.id !== report.id)]);
+        setLastSubmittedReport(report);
+        setDemoSubmitError('');
+        setDemoLoadError('');
         setMessage('Demo report saved to the local prototype backend. It was not sent to any real service.');
         setStep('received');
-      } catch { setDemoError('Could not reach the local demo API. Start it and try again.'); }
+      } catch (error) {
+        setDemoSubmitError(error instanceof Error && error.message.startsWith('The local demo API')
+          ? error.message
+          : 'Could not reach the local demo API. Start the service, then select Save again to retry.');
+      }
       return;
     }
     if (!caseId || !token || !photos.length) return;
@@ -129,9 +139,10 @@ export default function App() {
       {!demoMode && <p>{copy.photos_count}: {photos.length}</p>}{demoMode && <p>This illustrative report stays on this browser. No GPS or photo is required.</p>}
       <button onClick={() => void submit()}>{demoMode ? (locale === 'mr' ? 'या डिव्हाइसवर जतन करा' : 'Save on this device') : copy.send}</button></section>}
     {step === 'received' && <section className="card"><h2>{copy.report_saved}</h2><p role="status">{message || copy.saved_offline}</p>
-      {demoMode && <><p><strong>Demo review:</strong> Needs human review. This is not a compensation decision.</p>
-        <p>Official assessment: 20% · Satellite-style example: 40% · Farmer report: {form.damaged_share_pct}%</p>
-        <p>Why shown: the illustrative evidence differs and needs a person to compare the sources.</p>
+      {demoMode && lastSubmittedReport && <><p><strong>Demo review:</strong> {lastSubmittedReport.status}. This is not a compensation decision.</p>
+        <p>Official assessment: {lastSubmittedReport.official_pct}% · Satellite-style example: {lastSubmittedReport.satellite_style_pct}% · Farmer report: {lastSubmittedReport.form.damaged_share_pct}%</p>
+        <p>{lastSubmittedReport.explanation}</p>
+        <p>{lastSubmittedReport.data_status}</p>
         <button className="secondary" onClick={() => setStep('officer')}>Open officer view</button>
         <button className="secondary" onClick={() => setStep('welcome')}>Back to demo start</button></>}
       {!demoMode && <button className="secondary" onClick={() => setStep('review')}>{copy.retry}</button>}</section>}
