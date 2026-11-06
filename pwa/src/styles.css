@@ -44,3 +44,19 @@ textarea { width: 100%; border: 1px solid #9caea1; border-radius: 10px; padding:
 .queue { color: #526358; font-size: .85rem; }
 @media (max-width: 380px) { .app-shell { padding-left: 12px; padding-right: 12px; } .card { padding: 14px; } .choice-grid { gap: 7px; } }
 .demo-banner { background: #fff3cd; border: 1px solid #856404; border-radius: 8px; color: #332701; padding: 12px 16px; font-weight: 700; }
+.officer-card { background: #fafcfa; border: 1px solid #d4ded6; border-radius: 14px; padding: 14px; margin: 12px 0; }
+.evidence-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin: 10px 0; }
+.evidence-item { background: #f0f4f1; border-radius: 8px; padding: 8px 10px; }
+.evidence-item.missing { background: #fbeae8; border: 1px dashed #d97768; }
+.evidence-lbl { font-size: 0.75rem; color: #58675e; text-transform: uppercase; font-weight: 700; margin-bottom: 2px; }
+.evidence-val { font-size: 1.15rem; font-weight: 800; color: #164d34; }
+.evidence-item.missing .evidence-val { color: #b91c1c; font-size: 0.9rem; font-weight: 600; }
+.status-pill { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; margin-bottom: 6px; }
+.status-pill.needs-review { background: #fef3c7; color: #92400e; }
+.status-pill.consistent { background: #d1fae5; color: #065f46; }
+.status-pill.insufficient { background: #f3f4f6; color: #4b5563; }
+.status-pill.reviewed { background: #dbeafe; color: #1e40af; }
+.review-input-row { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.review-input-row input { padding: 8px 12px; border: 1px solid #9caea1; border-radius: 8px; }
+.officer-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+.officer-actions > button { flex: 1 1 200px; }
