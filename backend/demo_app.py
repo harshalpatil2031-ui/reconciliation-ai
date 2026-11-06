@@ -11,7 +11,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import AsyncIterator, Literal
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -192,7 +192,7 @@ def review_report(report_id: str, review: ReviewIn) -> dict[str, object]:
     return serialize_report(row)
 
 
-@app.delete("/demo/reports", status_code=204)
+@app.delete("/demo/reports", status_code=204, response_model=None)
 def reset_reports() -> None:
     with connect() as connection:
         connection.execute("DELETE FROM demo_reports")
